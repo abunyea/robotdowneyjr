@@ -1,0 +1,20 @@
+Represent the state of the board
+Read stdin and output to stdout
+
+board - 17 rows of 25 chars
+0 = open space
+1 = player 1
+2 = player 2
+3 = gray marbles
+_ = out of bounds, can't move here
+
+board - list of lists
+
+parseBoard - takes strings of board data and puts it in a data structure
+
+store what player number we are
+
+time allotted to player1, player2, gray marbles remaining for player1, 2, whos turn is next
+
+hexagonal -> rectangle move conversion
+
