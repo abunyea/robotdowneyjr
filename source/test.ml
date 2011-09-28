@@ -1,6 +1,6 @@
 
 type space = P1 | P2 | Grey | Empty | Void;;
-type move = (int * int) list;;
+type move = int * int * int * int (* (x1, y1, x2, y2) *)
 type board = space array array;;
 
 
@@ -20,6 +20,18 @@ let space_to_char space =
 		| Grey -> 'G'
 		| Empty -> 'O'
 		| Void -> ' ';;
+	
+let copy_board board = 
+	let new_board = Array.make 17 (Array.make 25 Void) in
+	let rec helper index =
+		if index == 17 then new_board else
+		((new_board.(index) <- Array.copy board.(index)); helper (index + 1)) in
+	helper 0;;
+
+let do_move board (x1, y1, x2, y2) : board =
+	let new_board = copy_board board in
+	let piece_to_move = new_board.(y1).(x1) in
+	((new_board.(y1).(x1) <- Empty); (new_board.(y2).(x2) <- piece_to_move); new_board);;
 
 let rec parse_line line : space array =
 	let row = Array.make 25 Void in
@@ -43,4 +55,8 @@ let print_board board =
 
 
 let brd = read_input() in
-print_board brd 
+let brd1 = do_move brd (9, 3, 8, 4) in
+
+((print_board brd);
+(print_newline());
+(print_board brd1))
