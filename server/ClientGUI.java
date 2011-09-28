@@ -22,12 +22,14 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ButtonGroup;
-import javax.swing.Timer;
+//import javax.swing.Timer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -312,11 +314,14 @@ public class ClientGUI {
         JPanel playPanel = new JPanel();
         frame.getContentPane().add(playPanel, BorderLayout.SOUTH);
 
-        JButton btnPrevious = new JButton("<");
+        final JButton btnPrevious = new JButton("<");
         playPanel.add(btnPrevious);
 
-        JButton btnNext = new JButton(">");
+        final JButton btnNext = new JButton(">");
         playPanel.add(btnNext);
+
+		final JButton btnPlay = new JButton("Start");
+		playPanel.add(btnPlay);
 
         JPanel timepanel = new JPanel();
         frame.getContentPane().add(timepanel, BorderLayout.NORTH);
@@ -403,7 +408,7 @@ public class ClientGUI {
                 }
                 boardpanel.repaint();
             }
-        });
+		});
 
         btnPrevious.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -415,8 +420,56 @@ public class ClientGUI {
                 lblBluetimeleft.setText(""+(m.t2/60000)+":"+bs+"."+(m.t2%1000));
                 boardpanel.repaint();
             }
-
         });
+
+		class ScheduledNext extends TimerTask {
+			public void run() {
+				Move m = boardpanel.advance();
+				if (m == null) {
+					cancel();
+				}
+				if(m.status==1){
+                    if(boardpanel.getTurn()==1){
+                        lblRedtimeleft.setText("Lose!");
+                        lblBluetimeleft.setText("Win!");
+                    }
+                    else{
+                        lblRedtimeleft.setText("Win!");
+                        lblBluetimeleft.setText("Lose!");
+                    }
+                }
+                else{
+                    String rs = String.format("%02d", (m.t1/1000)%60);
+                    String bs = String.format("%02d", (m.t2/1000)%60);
+                    lblRedtimeleft.setText (""+(m.t1/60000)+":"+rs+"."+(m.t1%1000));
+                    lblBluetimeleft.setText(""+(m.t2/60000)+":"+bs+"."+(m.t2%1000));
+                }
+                boardpanel.repaint();
+			}
+		}
+
+		ActionListener playListener = new ActionListener() {
+			private boolean start = true;
+			private Timer timer;
+			public void actionPerformed(ActionEvent arg0) {
+				if (start) {
+					timer = new Timer();
+					btnPrevious.setEnabled(false);
+					btnNext.setEnabled(false);
+					btnPlay.setText("Stop");
+					timer.scheduleAtFixedRate(new ScheduledNext(), 1000, 1000);
+					start = false;
+				}else {
+					timer.cancel();
+					btnPrevious.setEnabled(true);
+					btnNext.setEnabled(true);
+					btnPlay.setText("Play");
+					start = true;
+				}
+			}
+		};
+
+		btnPlay.addActionListener(playListener);
 
         frame.getContentPane().add(boardpanel, BorderLayout.CENTER);
         frame.pack();
