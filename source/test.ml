@@ -1,6 +1,7 @@
 
 type space = P1 | P2 | Grey | Empty | Void;;
-type board = space list list;;
+type move = (int * int) list;;
+type board = space array array;;
 
 
 let char_to_space ch =
@@ -19,27 +20,27 @@ let space_to_char space =
 		| Grey -> 'G'
 		| Empty -> 'O'
 		| Void -> ' ';;
-		
-let rec parse_line line : space list =
+
+let rec parse_line line : space array =
+	let row = Array.make 25 Void in
 	let rec run_through index = 
-		if index == 25 then [] else
-		(char_to_space line.[index])::(run_through (index + 1)) in
-	List.rev (run_through 0);;
+		if index == 25 then row else
+		((row.(index) <- (char_to_space line.[index])); run_through (index + 1)) in
+	run_through 0;;
 	
 let read_input() : board = 
-		let rec helper board line_number = 
-			if line_number == 17 then List.rev board else
-			let line = read_line() in
-			helper ((parse_line line)::board) (line_number + 1) in
-		helper [] 0;;
-		
+	let board = Array.make 17 (Array.make 25 Void) in
+	  let rec run_through index = 
+			if index = 17 then board else
+				let line = read_line() in
+				((board.(index) <- (parse_line line)); run_through (index + 1)) in
+			run_through 0;;
+
 let print_board board = 
-	let rec helper row = 
-		match row with
-			| h::t -> ((List.iter (fun a -> print_char(space_to_char a)) h);
-			 print_newline(); helper t)
-			| _ -> () in
-		helper board;;
+	let print_row row =
+		((Array.iter (fun x -> print_char(space_to_char x)) row); print_newline()) in
+	Array.iter (fun x -> print_row x) board;;
+
 
 let brd = read_input() in
 print_board brd 
