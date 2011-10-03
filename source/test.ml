@@ -1,10 +1,10 @@
 
 type space = P1 | P2 | Grey | Empty | Void;;
-type move = int * int * int * int (* (x1, y1, x2, y2) *)
+type move = int * int * int * int;; (* (x1, y1, x2, y2) *)
 type board = space array array;;
-type player = Player1 | Player2
+type player = Player1 | Player2;;
 
-
+Random.self_init();;
 
 let char_to_space ch =
 	match ch with
@@ -116,3 +116,4 @@ let minimax (board : board) (depth : int) : move =
 
 	*)
 	
+
