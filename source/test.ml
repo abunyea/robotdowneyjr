@@ -73,6 +73,31 @@ let print_board board =
 
 let get_possible_moves board : move list = [];;
 
+(* Returns a random move out of the move_set*)
+let random_bot move_set = 
+	let len = List.length move_set in
+	let index = Random.int len in
+	List.nth move_set index
+
+let get_p2_home board = 
+		[board.(0).(12); 
+		board.(1).(11); board.(1).(13); 
+		board.(2).(10); board.(2).(12); board.(2).(14);
+		board.(3).(9); board.(3).(11); board.(3).(13); board.(3).(15)];;
+		
+let get_p1_home board = 
+		[board.(16).(12); 
+		board.(15).(11); board.(15).(13); 
+		board.(14).(10); board.(14).(12); board.(14).(14);
+		board.(13).(9); board.(13).(11); board.(13).(13); board.(13).(15)];;
+		
+let has_won board player =
+	let (home, winning_piece) = 
+		if player = Player1 then 
+			(get_p2_home board, P1)
+		else (get_p1_home board, P2) in
+	List.length (List.filter (fun x -> x = winning_piece) home) >= 5;;
+		
 (*
 let minimax (board : board) (depth : int) : move =
 	let rec mini_max board depth = 
@@ -90,17 +115,4 @@ let minimax (board : board) (depth : int) : move =
 	 in mini_max board MAX_SEARCH_DEPTH;;
 
 	*)
-let (brd, time1, time2, grey1, grey2, player, us) = read_initial_input() in
-((print_board brd);
-(print_int(time1));
-(print_newline());
-(print_int(time2));
-(print_newline());
-(print_int(grey1));
-(print_newline());
-(print_int(grey2));
-(print_newline());
-(print_int(player));
-(print_newline());
-(print_int(us));
-(print_newline()))
+	
