@@ -2,6 +2,8 @@
 type space = P1 | P2 | Grey | Empty | Void;;
 type move = int * int * int * int (* (x1, y1, x2, y2) *)
 type board = space array array;;
+type player = Player1 | Player2
+
 
 
 let char_to_space ch =
@@ -40,23 +42,65 @@ let rec parse_line line : space array =
 		((row.(index) <- (char_to_space line.[index])); run_through (index + 1)) in
 	run_through 0;;
 	
-let read_input() : board = 
+let read_board_input() : board = 
 	let board = Array.make 17 (Array.make 25 Void) in
-	  let rec run_through index = 
+	  let rec run_through_board index = 
 			if index = 17 then board else
 				let line = read_line() in
-				((board.(index) <- (parse_line line)); run_through (index + 1)) in
-			run_through 0;;
+				((board.(index) <- (parse_line line)); run_through_board (index + 1)) in
+			(run_through_board 0)
+
+let read_other_input() : int * int * int * int * int * int =
+	let line1 = read_line() in
+	let line2 = read_line() in
+	let numbers = Str.split (Str.regexp_string " ") line1 in
+	let (time1, time2, grey1, grey2, player) = 
+		match numbers with 
+			| a::b::c::d::e::[] -> (int_of_string(a), int_of_string(b), int_of_string(c), int_of_string(d), int_of_string(e))
+			| _ -> (0, 0, 0, 0, 0)
+			in
+	(time1, time2, grey1, grey2, player, int_of_string(line2))
+	
+let read_initial_input() =
+	let board = read_board_input() in
+	let (time1, time2, grey1, grey2, player, us) = read_other_input() in
+	(board, time1, time2, grey1, grey2, player, us)
 
 let print_board board = 
 	let print_row row =
 		((Array.iter (fun x -> print_char(space_to_char x)) row); print_newline()) in
 	Array.iter (fun x -> print_row x) board;;
 
+let get_possible_moves board : move list = [];;
 
-let brd = read_input() in
-let brd1 = do_move brd (9, 3, 8, 4) in
+(*
+let minimax (board : board) (depth : int) : move =
+	let rec mini_max board depth = 
+		let possible_moves = get_possible_moves board in
+		match (depth, possible_moves) with
+			| (0, _ ) 
+			| (_, []) -> evaluate board
+			| _ -> List.fold_left max (List.map (fun f x -> mini_min (do_move board x) (depth -1)) possible_moves)
+	and mini_min board_depth = 
+		let possible_moves = get_possible_moves board in
+		match (depth, possible_moves) with
+			| (0, _ ) 
+			| (_, []) -> evaluate board
+			| _ -> List.fold_left min (List.map (fun f x -> mini_min (do_move board x) (depth -1)) possible_moves)
+	 in mini_max board MAX_SEARCH_DEPTH;;
 
+	*)
+let (brd, time1, time2, grey1, grey2, player, us) = read_initial_input() in
 ((print_board brd);
+(print_int(time1));
 (print_newline());
-(print_board brd1))
+(print_int(time2));
+(print_newline());
+(print_int(grey1));
+(print_newline());
+(print_int(grey2));
+(print_newline());
+(print_int(player));
+(print_newline());
+(print_int(us));
+(print_newline()))
