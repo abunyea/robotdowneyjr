@@ -1,8 +1,8 @@
 # Makefile for robotdowneyjr
 
 all :
-	ocamlc Board.mli Board.ml main.ml -0 main
+	ocamlc -o main str.cma Board.mli Board.ml State.mli State.ml Random_bot.mli Random_bot.ml main.ml
 
-clean:
+clean :
 	rm *.cmo
 	rm *.cmi
