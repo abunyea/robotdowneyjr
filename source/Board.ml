@@ -48,7 +48,7 @@ let do_move board (x1, y1, x2, y2) =
 
 let print_board board = 
 	let print_row row =
-		((Array.iter (fun x -> print_char(space_to_char x)) row); print_newline()) in
+		((Array.iter (fun x -> prerr_char(space_to_char x)) row); prerr_newline()) in
 	Array.iter (fun x -> print_row x) board
 
 let rec parse_line line : space array =
@@ -67,8 +67,8 @@ let read_input () : board =
 			run_through 0
 
 let string_of_move (x1, y1, x2, y2) =
-  (string_of_int x1) ^ " " ^ (string_of_int y1) ^ " " ^
-  (string_of_int x2) ^ " " ^ (string_of_int y2) ^ " -1 -1"
+  (string_of_int y1) ^ " " ^ (string_of_int x1) ^ " " ^
+  (string_of_int y2) ^ " " ^ (string_of_int x2) ^ " -1 -1"
 
 let get_p1_home board = 
 	[board.(16).(12); 
@@ -89,14 +89,14 @@ let has_won board player =
 		else (get_p1_home board, P2) in
 	List.length (List.filter (fun x -> x = winning_piece) home) >= 5
 
-let available_moves b player= 
+let available_moves b player = 
   let rec build_piece_list i1 i2 p = 
     if i1 = 16 && i2 = 24 then p 
     else if i2 = 24 then 
-      (if b.(i1).(i2) = player then build_piece_list (i1+1) 0 ((i2,i1)::p)
+      (if b.(i1).(i2) = player then (prerr_endline ((string_of_int i1) ^ "," ^ (string_of_int i2)); build_piece_list (i1+1) 0 ((i2,i1)::p))
         else build_piece_list (i1+1) 0 p)
        else 
-         (if b.(i1).(i2) = player then build_piece_list (i1) (i2+1) ((i2,i1)::p)
+         (if b.(i1).(i2) = player then (prerr_endline ((string_of_int i1) ^ "," ^ (string_of_int i2)); build_piece_list (i1) (i2+1) ((i2,i1)::p))
           else build_piece_list (i1) (i2+1) p) in
   (*Step list of a piece is all of the possible places it can step to *)
   let step_list (x,y) = 
@@ -109,29 +109,31 @@ let available_moves b player=
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)
-  let rec jump_list lst (x,y) = 
+  let rec jump_list lst (x,y) (u,v) = 
     (if (x+2 < 25 && b.(y).(x+2) <> Void && b.(y).(x+2) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+4 && b=y) lst) 
              && x+4 < 25 && b.(y).(x+4)=Empty)
-      then (x,y,x+4,y)::(jump_list ((x,y)::lst) (x+4,y)) else [])@
+      then (u,v,x+4,y)::(jump_list ((x,y)::lst) (x+4,y) (u,v)) else [])@
      (if (x-2 >= 0 && b.(y).(x-2) <> Void && b.(y).(x-2) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-4 && b=y) lst) && x-4 >= 0 && b.(y).(x-4)=Empty)
-      then (x,y,x-4,y)::(jump_list ((x,y)::lst) (x-4,y)) else [])@
+      then (u,v,x-4,y)::(jump_list ((x,y)::lst) (x-4,y) (u,v)) else [])@
      (if (x+2 < 25 && y+2 < 17 && b.(y+1).(x+1) <> Void && b.(y+1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y+2) lst) && b.(y+2).(x+2)=Empty)
-      then (x,y,x+2,y+2)::(jump_list ((x,y)::lst) (x+2,y+2)) else [])@
+      then (u,v,x+2,y+2)::(jump_list ((x,y)::lst) (x+2,y+2) (u,v)) else [])@
      (if (x-2 >= 0 && y+2 < 17 && b.(y+1).(x-1) <> Void && b.(y+1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y+2) lst) && b.(y+2).(x-2)=Empty)
-      then (x,y,x-2,y+2)::(jump_list ((x,y)::lst) (x-2,y+2)) else [])@
+      then (u,v,x-2,y+2)::(jump_list ((x,y)::lst) (x-2,y+2) (u,v)) else [])@
      (if (x-2 >= 0 && y-2 >= 0 && b.(y-1).(x-1) <> Void && b.(y-1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y-2) lst) && b.(y-2).(x-2)=Empty)
-      then (x,y,x-2,y-2)::(jump_list ((x,y)::lst) (x-2,y-2)) else [])@
+      then (u,v,x-2,y-2)::(jump_list ((x,y)::lst) (x-2,y-2) (u,v)) else [])@
      (if (x+2 < 25 && y-2 >= 0 && b.(y-1).(x+1) <> Void && b.(y-1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y-2) lst) && b.(y-2).(x+2)=Empty)
-      then (x,y,x+2,y-2)::(jump_list ((x,y)::lst) (x+2,y-2)) else []) in
+      then (u,v,x+2,y-2)::(jump_list ((x,y)::lst) (x+2,y-2) (u,v)) else []) in
      (List.fold_left (fun acc x -> (step_list x)@acc) 
                         [] (build_piece_list 0 0 []))
-      @(List.fold_left (fun acc x -> (jump_list [] x)@acc) 
+      @(List.fold_left (fun acc x -> (jump_list [] x x)@acc) 
                           [] (build_piece_list 0 0 []))
 
+let print_movelist lst =
+  List.iter (fun (a, b, c, d) -> (prerr_endline ((string_of_int a) ^ ", " ^ (string_of_int b) ^ ", " ^ (string_of_int c) ^ ", " ^ (string_of_int d)))) lst
 

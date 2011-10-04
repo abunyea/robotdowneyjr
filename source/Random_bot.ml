@@ -7,6 +7,7 @@ let random_bot state player =
     let player = if player = Player1 then P1 else P2 in
     let move_set = available_moves state.board player in
     prerr_endline "Constructed moves list";
+    print_movelist move_set;
 	let len = List.length move_set in
 	let index = Random.int len in
 	List.nth move_set index

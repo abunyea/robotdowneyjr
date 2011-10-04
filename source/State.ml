@@ -47,7 +47,7 @@ let read_opponent_input previous =
           status=a;
           time1=b;
           time2=c;
-          board=Board.do_move previous.board (d, e, f, g);
+          board=Board.do_move previous.board (e, d, g, f);
           grey_remain_1=(if (h <> -1 && i <> -1) then 
             previous.grey_remain_1 else
             (if previous.player = Player1 then previous.grey_remain_1 else 
@@ -65,6 +65,6 @@ let update_board state move =
     time2=state.time2;
     board=do_move state.board move;
     grey_remain_1=state.grey_remain_1;
-    grey_remain_2=state.grey_remain_2 }       
+    grey_remain_2=state.grey_remain_2 }    
   
  

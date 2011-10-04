@@ -4,6 +4,7 @@ open Random_bot;;
 
 let run () = 
   let (first_player, initial_state) = read_initial_input () in
+  print_board initial_state.board;
   let rec run_helper player current =
     if current.player = player then (
 	  (* Our turn *)

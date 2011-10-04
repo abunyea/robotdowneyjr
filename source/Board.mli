@@ -22,3 +22,5 @@ val string_of_move : move -> string
 (*Generates a list of available moves in the int*int*int*int format*)
 (* Takes as input a board and space, which must be either P1 or P2*)
 val available_moves : board -> space -> move_set
+
+val print_movelist : move list -> unit
