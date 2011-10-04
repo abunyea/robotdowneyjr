@@ -15,3 +15,21 @@ Will:
 1) Learn what porridge is: http://en.wikipedia.org/wiki/Porridge -> basically oatmeal :)
 2) Think about how to pick a move from a move_set
 
+
+(*
+let minimax (board : board) (depth : int) : move =
+	let rec mini_max board depth = 
+		let possible_moves = get_possible_moves board in
+		match (depth, possible_moves) with
+			| (0, _ ) 
+			| (_, []) -> evaluate board
+			| _ -> List.fold_left max (List.map (fun f x -> mini_min (do_move board x) (depth -1)) possible_moves)
+	and mini_min board_depth = 
+		let possible_moves = get_possible_moves board in
+		match (depth, possible_moves) with
+			| (0, _ ) 
+			| (_, []) -> evaluate board
+			| _ -> List.fold_left min (List.map (fun f x -> mini_min (do_move board x) (depth -1)) possible_moves)
+	 in mini_max board MAX_SEARCH_DEPTH;;
+
+	*)
