@@ -36,7 +36,6 @@ let read_initial_input () =
                              grey_remain_1=c; 
                              grey_remain_2=d; } )
     | _ -> failwith "Bad input on read_initial_input"
-   
 
 let read_opponent_input previous = 
   let line = read_line () in
@@ -47,7 +46,8 @@ let read_opponent_input previous =
           status=a;
           time1=b;
           time2=c;
-          board=Board.do_move previous.board (e, d, g, f);
+          board=(if (h <> -1 && i <> -1) then Board.do_move previous.board (e, d, g, f)
+                 else add_grey previous.board (i, h));
           grey_remain_1=(if (h <> -1 && i <> -1) then 
             previous.grey_remain_1 else
             (if previous.player = Player1 then previous.grey_remain_1 else 
