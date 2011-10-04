@@ -91,8 +91,8 @@ let has_won board player =
 
 let available_moves b player= 
   let rec build_piece_list i1 i2 p = 
-    if i1 = 17 && i2 = 25 then p 
-    else if i2 = 25 then 
+    if i1 = 16 && i2 = 24 then p 
+    else if i2 = 24 then 
       (if b.(i1).(i2) = player then build_piece_list (i1+1) 0 ((i2,i1)::p)
         else build_piece_list (i1+1) 0 p)
        else 
@@ -100,32 +100,33 @@ let available_moves b player=
           else build_piece_list (i1) (i2+1) p) in
   (*Step list of a piece is all of the possible places it can step to *)
   let step_list (x,y) = 
-    List.flatten([(if b.(y).(x+2) = Empty then [(x,y,x+2,y)] else []);
-      (if b.(y).(x-2) = Empty then [(x,y,x-2,y)] else []);
-      (if b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1)] else []);
-      (if b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1)] else []);
-      (if b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1)] else []);
-      (if b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1)] else [])]) in
+    List.flatten([(if x+2 < 17 && b.(y).(x+2) = Empty then [(x,y,x+2,y)] else []);
+      (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y)] else []);
+      (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1)] else []);
+      (if x+1 < 17 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1)] else []);
+      (if x+1 < 17 && y+1 < 25 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1)] else []);
+      (if x-1 >= 0 && y+1 < 25 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1)] else [])]) in
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)
   let rec jump_list lst (x,y) = 
-    (if (b.(y).(x+2) <> Void && b.(y).(x+2) <> Empty 
-      && not(List.exists (fun (a,b) -> a=x+4 && b=y) lst) && b.(y).(x+4)=Empty)
+    (if (x+2 < 25 && b.(y).(x+2) <> Void && b.(y).(x+2) <> Empty 
+      && not(List.exists (fun (a,b) -> a=x+4 && b=y) lst) 
+             && x+4 < 25 && b.(y).(x+4)=Empty)
       then (x,y,x+4,y)::(jump_list ((x,y)::lst) (x+4,y)) else [])@
-     (if (b.(y).(x-2) <> Void && b.(y).(x-2) <> Empty 
-      && not(List.exists (fun (a,b) -> a=x-4 && b=y) lst) && b.(y).(x-4)=Empty)
+     (if (x-2 >= 0 && b.(y).(x-2) <> Void && b.(y).(x-2) <> Empty 
+      && not(List.exists (fun (a,b) -> a=x-4 && b=y) lst) && x-4 >= 0 && b.(y).(x-4)=Empty)
       then (x,y,x-4,y)::(jump_list ((x,y)::lst) (x-4,y)) else [])@
-     (if (b.(y+1).(x+1) <> Void && b.(y+1).(x+1) <> Empty 
+     (if (x+2 < 25 && y+2 < 17 && b.(y+1).(x+1) <> Void && b.(y+1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y+2) lst) && b.(y+2).(x+2)=Empty)
       then (x,y,x+2,y+2)::(jump_list ((x,y)::lst) (x+2,y+2)) else [])@
-     (if (b.(y+1).(x-1) <> Void && b.(y+1).(x-1) <> Empty 
+     (if (x-2 >= 0 && y+2 < 17 && b.(y+1).(x-1) <> Void && b.(y+1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y+2) lst) && b.(y+2).(x-2)=Empty)
       then (x,y,x-2,y+2)::(jump_list ((x,y)::lst) (x-2,y+2)) else [])@
-     (if (b.(y-1).(x-1) <> Void && b.(y-1).(x-1) <> Empty 
+     (if (x-2 >= 0 && y-2 >= 0 && b.(y-1).(x-1) <> Void && b.(y-1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y-2) lst) && b.(y-2).(x-2)=Empty)
       then (x,y,x-2,y-2)::(jump_list ((x,y)::lst) (x-2,y-2)) else [])@
-     (if (b.(y-1).(x+1) <> Void && b.(y-1).(x+1) <> Empty 
+     (if (x+2 < 25 && y-2 >= 0 && b.(y-1).(x+1) <> Void && b.(y-1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y-2) lst) && b.(y-2).(x+2)=Empty)
       then (x,y,x+2,y-2)::(jump_list ((x,y)::lst) (x+2,y-2)) else []) in
      (List.fold_left (fun acc x -> (step_list x)@acc) 
