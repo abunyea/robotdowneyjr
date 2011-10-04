@@ -70,6 +70,21 @@ let string_of_move (x1, y1, x2, y2) =
   (string_of_int y1) ^ " " ^ (string_of_int x1) ^ " " ^
   (string_of_int y2) ^ " " ^ (string_of_int x2) ^ " -1 -1"
 
+(* Returns the coordinates of the players home positions in the form*)
+(* (y, x) *)
+let get_home_coords player = 
+	if player = P1 then [(16, 2); (15, 11); (15, 13);
+		(14, 10); (14, 12); (14, 14); (13, 9); (13, 11); (13, 13); (13, 15)]
+	else
+		[(0,12); (15, 11); (15, 13); (14, 10); (14, 12); (14, 14);
+		 (13, 9); (13, 11); (13, 13); (13, 15)]
+
+(* Returns the pieces in the players home position. Note that if you want to*)
+(* check *)
+let get_home_pieces board player = 
+	let coords = get_home_coords player in
+	List.fold_left (fun acc (y, x) -> board.(y).(x)::acc) [] coords
+	
 let get_p1_home board = 
 	[board.(16).(12); 
 	board.(15).(11); board.(15).(13); 
@@ -84,9 +99,9 @@ let get_p2_home board =
 
 let has_won board player =
 	let (home, winning_piece) = 
-		if player = Player1 then 
-			(get_p2_home board, P1)
-		else (get_p1_home board, P2) in
+		if player = P1 then 
+			(get_home_pieces board P2, P1)
+		else (get_home_pieces board P1, P2) in
 	List.length (List.filter (fun x -> x = winning_piece) home) >= 5
 
 let available_moves b player = 
