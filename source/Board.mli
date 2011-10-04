@@ -13,7 +13,7 @@ val toggle_player : player -> player
 
 val get_p1_home : board -> space list
 val get_p2_home : board -> space list
-val has_won : board -> player -> bool
+val has_won : board -> space -> bool
 
 (* Prints a move for std out, with appropriate
    -1s to not place a gray marble. *)

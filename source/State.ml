@@ -43,13 +43,11 @@ let read_opponent_input previous =
     match numbers with 
 	  | a::b::c::d::e::f::g::h::i::[] -> 
 				let new_brd = Board.do_move previous.board (d, e, f, g) in
-				if h != -1 then new_brd.(h).(i) <- Grey else ()
+				if h != -1 then new_brd.(h).(i) <- Grey;
         { player=previous.player;
           status=a;
           time1=b;
           time2=c;
-          board=(if (h <> -1 && i <> -1) then Board.do_move previous.board (e, d, g, f)
-                 else add_grey previous.board (i, h));
           board= new_brd;
           grey_remain_1=(if (h <> -1 && i <> -1) then 
             previous.grey_remain_1 else
