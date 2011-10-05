@@ -36,7 +36,6 @@ let read_initial_input () =
                              grey_remain_1=c; 
                              grey_remain_2=d; } )
     | _ -> failwith "Bad input on read_initial_input"
-   
 
 let read_opponent_input previous = 
   let line = read_line () in
@@ -44,7 +43,7 @@ let read_opponent_input previous =
     match numbers with 
 	  | a::b::c::d::e::f::g::h::i::[] -> 
 				let new_brd = Board.do_move previous.board (d, e, f, g) in
-				if h != -1 then new_brd.(h).(i) <- Grey else ()
+				if h != -1 then new_brd.(h).(i) <- Grey;
         { player=previous.player;
           status=a;
           time1=b;
