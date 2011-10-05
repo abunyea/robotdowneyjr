@@ -1,6 +1,7 @@
 open Board;;
 open State;;
 open Random_bot;;
+open Baby_bot;;
 
 let run () = 
   let (first_player, initial_state) = read_initial_input () in
@@ -10,7 +11,7 @@ let run () =
 	  (* Our turn *)
       prerr_endline "Our turn..";
       (* do and output the current move *)
-      let move = random_bot current player in
+      let move = baby_bot current player in
         print_endline (string_of_move move);
         prerr_endline "Moved";
       (* get move status *)
