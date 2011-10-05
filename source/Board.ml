@@ -27,6 +27,17 @@ let player_of_int i =
   | 2 -> Player2
   | _ -> failwith "Can't parse player, must be 1 or 2" 
 
+let player_of_space s =
+  match s with
+  | P1 -> Player1
+  | P2 -> Player2
+  | _ -> failwith "Can't convert this space to a player"
+
+let space_of_player p =
+  match p with
+  | Player1 -> P1
+  | Player2 -> P2
+
 let toggle_player player =
   match player with
   | Player1 -> Player2
@@ -50,21 +61,6 @@ let print_board board =
 	let print_row row =
 		((Array.iter (fun x -> prerr_char(space_to_char x)) row); prerr_newline()) in
 	Array.iter (fun x -> print_row x) board
-
-let rec parse_line line : space array =
-	let row = Array.make 25 Void in
-	let rec run_through index = 
-		if index == 25 then row else
-		((row.(index) <- (char_to_space line.[index])); run_through (index + 1)) in
-	run_through 0
-																						
-let read_input () : board = 
-	let board = Array.make 17 (Array.make 25 Void) in
-	  let rec run_through index = 
-			if index = 17 then board else
-				let line = read_line() in
-				((board.(index) <- (parse_line line)); run_through (index + 1)) in
-			run_through 0
 
 let string_of_move (x1, y1, x2, y2) =
   (string_of_int y1) ^ " " ^ (string_of_int x1) ^ " " ^
@@ -108,19 +104,19 @@ let available_moves b player =
   let rec build_piece_list i1 i2 p = 
     if i1 = 16 && i2 = 24 then p 
     else if i2 = 24 then 
-      (if b.(i1).(i2) = player then (prerr_endline ((string_of_int i1) ^ "," ^ (string_of_int i2)); build_piece_list (i1+1) 0 ((i2,i1)::p))
+      (if b.(i1).(i2) = player then (build_piece_list (i1+1) 0 ((i2,i1)::p))
         else build_piece_list (i1+1) 0 p)
        else 
-         (if b.(i1).(i2) = player then (prerr_endline ((string_of_int i1) ^ "," ^ (string_of_int i2)); build_piece_list (i1) (i2+1) ((i2,i1)::p))
+         (if b.(i1).(i2) = player then (build_piece_list (i1) (i2+1) ((i2,i1)::p))
           else build_piece_list (i1) (i2+1) p) in
   (*Step list of a piece is all of the possible places it can step to *)
   let step_list (x,y) = 
-    List.flatten([(if x+2 < 17 && b.(y).(x+2) = Empty then [(x,y,x+2,y)] else []);
+    List.flatten([(if x+2 < 25 && b.(y).(x+2) = Empty then [(x,y,x+2,y)] else []);
       (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y)] else []);
       (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1)] else []);
-      (if x+1 < 17 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1)] else []);
-      (if x+1 < 17 && y+1 < 25 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1)] else []);
-      (if x-1 >= 0 && y+1 < 25 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1)] else [])]) in
+      (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1)] else []);
+      (if x+1 < 25 && y+1 < 17 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1)] else []);
+      (if x-1 >= 0 && y+1 < 17 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1)] else [])]) in
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)

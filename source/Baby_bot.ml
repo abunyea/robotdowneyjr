@@ -9,7 +9,6 @@ open State
 
 let baby_bot state player = 
 	Random.self_init ();
-	
   let player = if player = Player1 then P1 else P2 in
   let move_set = available_moves state.board player in
 	
@@ -33,16 +32,18 @@ let baby_bot state player =
 			else if center_distance < best then ([(x1,y1,x2,y2)],center_distance)
 				else (set,best) in 
 				
-	let best_list = List.fold_left max_distance ([],0) move_set in
+	let best_list = fst (List.fold_left max_distance ([],0) move_set) in
 	
 	let best_list = if List.length best_list = 1 then best_list 
-		else List.fold_left furthest_back ([],16) move_set in
+		else fst (List.fold_left furthest_back ([],16) best_list) in
 		
   let best_list = if List.length best_list = 1 then best_list 
-		else List.fold_left most_center ([],12) move_set in
+		else fst (List.fold_left most_center ([],12) best_list) in
 		
-	prerr_endline "Constructed moves list";		
+	prerr_endline "Constructed moves list";	
   print_movelist best_list;
 	let len = List.length best_list in
 	let index = Random.int len in
-	List.nth best_list index
+    match best_list with
+    [] -> failwith "no moves"
+	| _ -> List.nth best_list index

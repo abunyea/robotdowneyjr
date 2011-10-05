@@ -42,7 +42,7 @@ let read_opponent_input previous =
   let numbers = List.map int_of_string (Str.split (Str.regexp_string " ") line) in
     match numbers with 
 	  | a::b::c::d::e::f::g::h::i::[] -> 
-				let new_brd = Board.do_move previous.board (d, e, f, g) in
+				let new_brd = Board.do_move previous.board (e, d, g, f) in
 				if h != -1 then new_brd.(h).(i) <- Grey;
         { player=previous.player;
           status=a;
