@@ -1,6 +1,6 @@
 open Board
 open State
-
+type comparator = GT | LT| GTE | LTE
 (* Returns a move based on a simple set of heuristics as follows:*)
 (* 1) Perform the move that moves us the most in the forward direction*)
 (* 2) If tie for (1) then move the piece that is farthest back*)
@@ -12,38 +12,28 @@ let baby_bot state player =
   let player = if player = Player1 then P1 else P2 in
   let move_set = available_moves state.board player in
 	
-	let max_distance (set,best) (x1,y1,x2,y2) = 
-		let distance = 
-			(if player = P1 then y1-y2 else y2-y1) in
-		if distance = best then ((x1,y1,x2,y2)::set,best)
-			else if distance > best then ([(x1,y1,x2,y2)],distance)
-				else (set,best) in 
-				
-	let furthest_back (set,back) (x1,y1,x2,y2) = 
-		let endzone_distance = 
-			(if player = P1 then 16-y1 else y1) in
-		if endzone_distance = back then ((x1,y1,x2,y2)::set,back)
-			else if endzone_distance < back then ([(x1,y1,x2,y2)],endzone_distance)
-				else (set,back) in 		
-				
-	let most_center (set,best) (x1,y1,x2,y2) = 
-		let center_distance = abs(12-x2) in
-		if center_distance = best then ((x1,y1,x2,y2)::set,best)
-			else if center_distance < best then ([(x1,y1,x2,y2)],center_distance)
-				else (set,best) in 
-				
-	let best_list = fst (List.fold_left max_distance ([],0) move_set) in
-	
-	let best_list = if List.length best_list = 1 then best_list 
-		else fst (List.fold_left furthest_back ([],16) best_list) in
+	let vert_dist player (x1,y1,x2,y2) = 
+		if player = P1 then y1-y2 else y2-y1 in
 		
-  let best_list = if List.length best_list = 1 then best_list 
-		else fst (List.fold_left most_center ([],12) best_list) in
+	let endzone_dist player (x1,y1,x2,y2) = 
+		if player = P1 then 16-y1 else y1 in
 		
+	let center_dist player (x1,y1,x2,y2) = abs(12-x2) in
+		
+	let optimize f c (set,best) move =
+		let result =  f player move in
+			if result = best then (move::set,best) 
+				else if (result > best && c = GT) || (result < best && c = LT) 
+					then ([move],result)
+				else (set,best) in
+				
+	let best_list = 
+		fst (List.fold_left (optimize center_dist LT) ([],12) (
+		fst (List.fold_left (optimize endzone_dist LT) ([],16) (
+		fst (List.fold_left (optimize vert_dist GT) ([],0) move_set))))) in
+			
 	prerr_endline "Constructed moves list";	
   print_movelist best_list;
-	let len = List.length best_list in
-	let index = Random.int len in
     match best_list with
     [] -> failwith "no moves"
-	| _ -> List.nth best_list index
+		| _ -> List.nth best_list (Random.int (List.length best_list))
