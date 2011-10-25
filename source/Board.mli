@@ -19,6 +19,9 @@ val has_won : board -> space -> bool
    -1s to not place a gray marble. *)
 val string_of_move : move -> string
 
+val build_piece_list : board -> space -> int -> int -> (int*int) list -> 
+	(int*int) list
+
 (*Generates a list of available moves in the int*int*int*int format*)
 (* Takes as input a board and space, which must be either P1 or P2*)
 val available_moves : board -> space -> move_set
