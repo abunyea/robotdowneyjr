@@ -1,9 +1,10 @@
 open Board;;
 open State;;
 open Random_bot;;
-open Minimax_bot;;
+open Manhattan_Bot;;
 open Baby_bot;;
 open Test_bot;;
+open Minimax_bot;;
 
 let run () = 
   let (first_player, initial_state) = read_initial_input () in
@@ -13,14 +14,14 @@ let run () =
 	  (* Our turn *)
        prerr_endline "Our turn.."; 
       (* do and output the current move *)
-      let move = test_bot current player in
+      let move = basic_alphabeta_bot current player in
         print_endline (string_of_move move);
-        prerr_endline "Moved"; 
+        prerr_endline ("Moved: " ^ (string_of_move move)); 
       (* get move status *)
       let status = int_of_string (read_line ()) in
         (match status with
          | 0 -> run_helper (toggle_player player) 
-                           (update_board current (fst move))
+                           (update_board current move)
          | _ -> prerr_endline ("Game over with code " ^ (string_of_int status)))
        )
     else (

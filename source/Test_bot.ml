@@ -1,5 +1,5 @@
-open Board;;
-open State;;
+open Board
+open State
 type comparator = GT | LT| GTE | LTE
 
 let total_moves = ref 0;;
@@ -11,21 +11,24 @@ let turns = ref 0;;
 (* 3) If tie for (2) then perform the move that puts us closest to the center vertical axis*)
 (* 4) If tie for (3) then pick a random move from the remaining list*)
 
-let test_bot state player : whole_move = 
+let test_bot state player = 
 	Random.self_init ();
-  let player = if player = Player1 then P1 else P2 in
   let move_set = available_moves state.board player in
 	
+	
 	let get_grey_move() : int * int = 
+		let board = state.board in
+		let iter_func (y,x) = 
+			prerr_endline (String.make 1 (space_to_char board.(y).(x))) in
 		let rec find_empty home_coords =
 			match home_coords with
 				| [] -> (-1, -1)
 				| (y, x)::t -> if state.board.(y).(x) = Empty then (x, y) else find_empty t in
 		let (goal_positions, remaining) = if player = P1 then (get_home_coords P2, state.grey_remain_1) 
 			else (get_home_coords P1, state.grey_remain_2) in
-		if remaining = 0 then (-1, -1) else find_empty goal_positions in 
-		
-		
+			List.iter iter_func goal_positions;
+			prerr_endline "";
+		if remaining = 0 then (-1, -1) else find_empty goal_positions in
 		
 	let num_moves = List.length move_set in
 	total_moves:= !total_moves + num_moves;
@@ -34,13 +37,13 @@ let test_bot state player : whole_move =
 	prerr_endline stats_string;
 	
 	
-	let vert_dist player (x1,y1,x2,y2) = 
+	let vert_dist player (x1,y1,x2,y2, _, _ ) = 
 		if player = P1 then y1-y2 else y2-y1 in
 		
-	let endzone_dist player (x1,y1,x2,y2) = 
+	let endzone_dist player (x1,y1,x2,y2, _, _ ) = 
 		if player = P1 then 16-y1 else y1 in
 		
-	let center_dist player (x1,y1,x2,y2) = abs(12-x2) in
+	let center_dist player (x1,y1,x2,y2, _, _ ) = abs(12-x2) in
 		
 	let optimize f c (set,best) move =
 		let result =  f player move in
@@ -58,4 +61,6 @@ let test_bot state player : whole_move =
   print_movelist best_list;
     match best_list with
     [] -> failwith "no moves"
-		| _ -> (List.nth best_list (Random.int (List.length best_list)), get_grey_move())
+		| _ -> let (x1, y1, x2, y2, _, _) = List.nth best_list (Random.int (List.length best_list)) in
+			let (x3, y3) = get_grey_move() in
+			(x1, y1, x2, y2, y3, x3)
