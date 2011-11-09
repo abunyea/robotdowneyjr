@@ -7,4 +7,4 @@ open State
 (* 3) If tie for (2) then perform the move that puts us closest to the center vertical axis*)
 (* 4) If tie for (3) then pick a random move from the remaining list*)
 
-val baby_bot : state -> player -> move
+val baby_bot : state -> space -> move

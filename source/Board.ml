@@ -1,8 +1,7 @@
 type space = P1 | P2 | Grey | Empty | Void
 type board = space array array
-type move = int * int * int * int
+type move = int * int * int * int * int * int
 type move_set = move list
-type player = Player1 | Player2
 
 let char_to_space ch =
 	match ch with
@@ -23,25 +22,16 @@ let space_to_char space =
 
 let player_of_int i =
   match i with
-  | 1 -> Player1
-  | 2 -> Player2
+  | 1 -> P1
+  | 2 -> P2
   | _ -> failwith "Can't parse player, must be 1 or 2" 
 
-let player_of_space s =
-  match s with
-  | P1 -> Player1
-  | P2 -> Player2
-  | _ -> failwith "Can't convert this space to a player"
-
-let space_of_player p =
-  match p with
-  | Player1 -> P1
-  | Player2 -> P2
 
 let toggle_player player =
   match player with
-  | Player1 -> Player2
-  | Player2 -> Player1
+  | P1 -> P2
+  | P2 -> P1
+	| _ -> failwith "Invalid input to toggle_player"
 
 let copy_board board = 
 	let new_board = Array.make 17 (Array.make 25 Void) in
@@ -50,8 +40,12 @@ let copy_board board =
 		(new_board.(index) <- Array.copy board.(index); helper (index + 1)) in
 	helper 0
 
-let do_move board (x1, y1, x2, y2) =
+(* Takes a move in the format*)
+(* (x1, y1, x2, y2) and executes it,*)
+(* returning a new board *)
+let do_move board (x1, y1, x2, y2, x3, y3) =
     let new_board = copy_board board in
+		if x3 = -1 then () else new_board.(y3).(x3) <- Grey;
     let piece_to_move = new_board.(y1).(x1) in
     (new_board.(y1).(x1) <- Empty; 
     new_board.(y2).(x2) <- piece_to_move; 
@@ -62,18 +56,22 @@ let print_board board =
 		((Array.iter (fun x -> prerr_char(space_to_char x)) row); prerr_newline()) in
 	Array.iter (fun x -> print_row x) board
 
-let string_of_move (x1, y1, x2, y2) =
+let string_of_move (x1, y1, x2, y2, x3, y3) =
   (string_of_int y1) ^ " " ^ (string_of_int x1) ^ " " ^
-  (string_of_int y2) ^ " " ^ (string_of_int x2) ^ " -1 -1"
+  (string_of_int y2) ^ " " ^ (string_of_int x2) ^ " " ^
+	(string_of_int y3) ^ " " ^ (string_of_int x3)
 
 (* Returns the coordinates of the players home positions in the form*)
-(* (y, x) *)
+(* (y, x)               *)
+(*    /\     \ p1 /     *)
+(*   /  \     \  /      *)
+(*  / p2 \     \/       *)
 let get_home_coords player = 
-	if player = P1 then [(16, 2); (15, 11); (15, 13);
+	if player = P1 then [(16, 12); (15, 11); (15, 13);
 		(14, 10); (14, 12); (14, 14); (13, 9); (13, 11); (13, 13); (13, 15)]
 	else
-		[(0,12); (15, 11); (15, 13); (14, 10); (14, 12); (14, 14);
-		 (13, 9); (13, 11); (13, 13); (13, 15)]
+		[(0,12); (1, 11); (1, 13); (2, 10); (2, 12); (2, 14);
+		 (3, 9); (3, 11); (3, 13); (3, 15)]
 
 (* Returns the pieces in the players home position. Note that if you want to*)
 (* check *)
@@ -92,6 +90,7 @@ let get_p2_home board =
 	board.(1).(11); board.(1).(13); 
 	board.(2).(10); board.(2).(12); board.(2).(14);
 	board.(3).(9); board.(3).(11); board.(3).(13); board.(3).(15)]
+
 
 let has_won board player =
 	let (home, winning_piece) = 
@@ -112,16 +111,18 @@ let rec build_piece_list board player bound1 bound2 pieces =
 					 then (build_piece_list board player (bound1) (bound2+1) 
 						 ((bound2,bound1)::pieces))
            else build_piece_list board player (bound1) (bound2+1) pieces)
+					
+
 
 let available_moves b player = 
   (*Step list of a piece is all of the possible places it can step to *)
-  let step_list (x,y) = 
-    List.flatten([(if x+2 < 25 && b.(y).(x+2) = Empty then [(x,y,x+2,y)] else []);
-      (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y)] else []);
-      (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1)] else []);
-      (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1)] else []);
-      (if x+1 < 25 && y+1 < 17 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1)] else []);
-      (if x-1 >= 0 && y+1 < 17 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1)] else [])]) in
+  let step_list (x,y) : move list= 
+    List.flatten([(if x+2 < 25 && b.(y).(x+2) = Empty then [(x,y,x+2,y, -1, -1)] else []);
+      (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y, -1, -1)] else []);
+      (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1, -1, -1)] else []);
+      (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1, -1, -1)] else []);
+      (if x+1 < 25 && y+1 < 17 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1, -1, -1)] else []);
+      (if x-1 >= 0 && y+1 < 17 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1, -1, -1)] else [])]) in
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)
@@ -129,27 +130,45 @@ let available_moves b player =
     (if (x+2 < 25 && b.(y).(x+2) <> Void && b.(y).(x+2) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+4 && b=y) lst) 
              && x+4 < 25 && b.(y).(x+4)=Empty)
-      then (u,v,x+4,y)::(jump_list ((x,y)::lst) (x+4,y) (u,v)) else [])@
+      then (u,v,x+4, y, -1, -1)::(jump_list ((x,y)::lst) (x+4,y) (u,v)) else [])@
      (if (x-2 >= 0 && b.(y).(x-2) <> Void && b.(y).(x-2) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-4 && b=y) lst) && x-4 >= 0 && b.(y).(x-4)=Empty)
-      then (u,v,x-4,y)::(jump_list ((x,y)::lst) (x-4,y) (u,v)) else [])@
+      then (u,v,x-4,y, -1, -1)::(jump_list ((x,y)::lst) (x-4,y) (u,v)) else [])@
      (if (x+2 < 25 && y+2 < 17 && b.(y+1).(x+1) <> Void && b.(y+1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y+2) lst) && b.(y+2).(x+2)=Empty)
-      then (u,v,x+2,y+2)::(jump_list ((x,y)::lst) (x+2,y+2) (u,v)) else [])@
+      then (u,v,x+2,y+2, -1, -1)::(jump_list ((x,y)::lst) (x+2,y+2) (u,v)) else [])@
      (if (x-2 >= 0 && y+2 < 17 && b.(y+1).(x-1) <> Void && b.(y+1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y+2) lst) && b.(y+2).(x-2)=Empty)
-      then (u,v,x-2,y+2)::(jump_list ((x,y)::lst) (x-2,y+2) (u,v)) else [])@
+      then (u,v,x-2,y+2, -1, -1)::(jump_list ((x,y)::lst) (x-2,y+2) (u,v)) else [])@
      (if (x-2 >= 0 && y-2 >= 0 && b.(y-1).(x-1) <> Void && b.(y-1).(x-1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x-2 && b=y-2) lst) && b.(y-2).(x-2)=Empty)
-      then (u,v,x-2,y-2)::(jump_list ((x,y)::lst) (x-2,y-2) (u,v)) else [])@
+      then (u,v,x-2,y-2, -1, -1)::(jump_list ((x,y)::lst) (x-2,y-2) (u,v)) else [])@
      (if (x+2 < 25 && y-2 >= 0 && b.(y-1).(x+1) <> Void && b.(y-1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y-2) lst) && b.(y-2).(x+2)=Empty)
-      then (u,v,x+2,y-2)::(jump_list ((x,y)::lst) (x+2,y-2) (u,v)) else []) in
+      then (u,v,x+2,y-2, -1, -1)::(jump_list ((x,y)::lst) (x+2,y-2) (u,v)) else []) in
      (List.fold_left (fun acc x -> (step_list x)@acc) 
                         [] (build_piece_list b player 0 0 []))
       @(List.fold_left (fun acc x -> (jump_list [] x x)@acc) 
                           [] (build_piece_list b player 0 0 []))
 
+let ordered_available_moves b player = 
+	let (x0, y0) = if player = P1 then (12,0) else (12,16) in
+	let rec take lst num = 
+		if num >= List.length lst then lst else
+			if num = 0 then [] else
+				(List.hd lst)::(take (List.tl lst) (num - 1)) in
+	let min_v_dist move1 move2 = 
+		let (_, _, _, y1, _, _) = move1 in
+		let (_, _, _, y2, _, _) = move2 in
+		let abs1 = abs(y1 - y0) in
+		let abs2 = abs(y2 - y0) in
+		if abs1 > abs2 then 1 else (if abs1 < abs2 then -1 else 0) in
+	take (List.sort min_v_dist (available_moves b player)) 20
+	
 let print_movelist lst =
-  List.iter (fun (a, b, c, d) -> (prerr_endline ((string_of_int a) ^ ", " ^ (string_of_int b) ^ ", " ^ (string_of_int c) ^ ", " ^ (string_of_int d)))) lst
+	let print_func (a, b, c, d, e, f) = 
+		let soi = string_of_int in
+		let str = (soi b) ^ ", " ^ (soi a) ^ ", " ^ (soi d) ^ ", " ^ (soi c) ^ ", " ^ (soi f) ^ ", " ^ (soi e) in
+		prerr_endline str in
+  List.iter print_func lst
 

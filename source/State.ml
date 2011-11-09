@@ -1,6 +1,6 @@
 open Board
 
-type state = { player : player;
+type state = { player : space;
                status : int;
                time1 : int;
                time2 : int;
@@ -37,35 +37,30 @@ let read_initial_input () =
                              grey_remain_2=d; } )
     | _ -> failwith "Bad input on read_initial_input"
 
-let read_opponent_input previous = 
-  let line = read_line () in
-  let numbers = List.map int_of_string (Str.split (Str.regexp_string " ") line) in
-    match numbers with 
-	  | a::b::c::d::e::f::g::h::i::[] -> 
-				let new_brd = Board.do_move previous.board (e, d, g, f) in
-				if h != -1 then new_brd.(h).(i) <- Grey;
-        { player=previous.player;
-          status=a;
-          time1=b;
-          time2=c;
-          board= new_brd;
-          grey_remain_1=(if (h <> -1 && i <> -1) then 
-            previous.grey_remain_1 else
-            (if previous.player = Player1 then previous.grey_remain_1 else 
-             previous.grey_remain_1 - 1));
-          grey_remain_2=if (h <> -1 && i <> -1) then 
-            previous.grey_remain_2 else
-            (if previous.player = Player2 then previous.grey_remain_2 else 
-             previous.grey_remain_2 - 1) }
-      | _ -> failwith "Bad input to read_opponent_input"  
-
 let update_board state move =
+	let (x1, y1, _, _, x3, y3) = move in
+	let (grey1, grey2) = 
+		(if x3 <> -1 && y3 <> -1 then 
+			(if state.board.(y1).(x1) = P1 then 
+				(state.grey_remain_1 - 1, state.grey_remain_2) else
+				(state.grey_remain_1, state.grey_remain_2)) else
+			(state.grey_remain_1, state.grey_remain_2)) in
   { player=state.player;
     status=state.status;
     time1=state.time1;
     time2=state.time2;
     board=do_move state.board move;
-    grey_remain_1=state.grey_remain_1;
-    grey_remain_2=state.grey_remain_2 }       
+    grey_remain_1=grey1;
+    grey_remain_2=grey2 }       
+		
+let read_opponent_input previous = 
+  let line = read_line () in
+  let numbers = List.map int_of_string (Str.split (Str.regexp_string " ") line) in
+    match numbers with 
+		  | a::b::c::d::e::f::g::h::i::[] -> update_board previous (e, d, g, f, i, h)
+      | _ -> failwith "Bad input to read_opponent_input"  
+
+
+
   
  

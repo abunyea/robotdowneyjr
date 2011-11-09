@@ -8,7 +8,6 @@ open State
 (*TODO: change this from baby_bot, which is what it is now*)
 let manhattan_bot state player = 
 	Random.self_init ();
-  let player = if player = Player1 then P1 else P2 in
   let move_set = available_moves state.board player in
 
 	let manhattan (x2,y2) sum (x1,y1) =

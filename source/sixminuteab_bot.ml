@@ -45,7 +45,8 @@ let sixminuteab_bot state player =
 
   else (check_ending state;
   if not !ending then
-    (* minimax *) failwith "no"
+    (* minimax *) 
+			basic_alphabeta_bot state player
 
   else
     (* lookup table or search *) failwith "no")

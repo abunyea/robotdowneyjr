@@ -1,6 +1,6 @@
 open Board
 
-type state = { player : player;
+type state = { player : space;
                status : int;
                time1 : int;
                time2 : int;
@@ -10,7 +10,7 @@ type state = { player : player;
 
 (* Read the whole board, plus all other state
    related info. The player is who goes first *)
-val read_initial_input : unit -> player * state
+val read_initial_input : unit -> space * state
 
 (* Read a single line containing state
    info, and construct a new state using
