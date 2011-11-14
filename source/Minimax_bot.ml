@@ -35,6 +35,33 @@ let num_moves_dif player state =
 	
 	let dif = (List.fold_left their_fold_func 0 their_pieces) - (List.fold_left our_fold_func 0 our_pieces) in
 	float_of_int dif
+
+
+let num_moves_dif1 player state =
+	let board = state.board in
+	let other_player = toggle_player player in
+	let our_pieces = build_piece_list board player 0 0 [] in
+	let their_pieces = build_piece_list board other_player 0 0 [] in
+	
+	let build_num_moves player sum (x, y) = 
+		let home_spots = if player = P1 then get_home_coords P2 else get_home_coords P1 in
+		let rec find_first_empty spots = 
+			match spots with
+				| [] -> failwith "Fuck"
+				| (y,x)::[] -> (x, y)
+				| (y,x)::t -> if board.(y).(x) = Empty then (x, y) else find_first_empty t in
+		let (x2, y2) = find_first_empty home_spots in
+		let v_dist = abs(y2 - y) in
+		let moves = (if x = 12 || (x > 12 && ((x - y) <= 12)) || (x < 12 && ((x + y) >= 12)) then
+			v_dist else
+			(v_dist + ((abs (x - x2)) / 2))) in
+		sum + moves in
+		
+	let our_fold_func = build_num_moves player in
+	let their_fold_func = build_num_moves other_player in
+	
+	let dif = (List.fold_left their_fold_func 0 their_pieces) - (List.fold_left our_fold_func 0 our_pieces) in
+	float_of_int dif
 	
 	
 let furthest_back player state = 
@@ -45,8 +72,12 @@ let furthest_back player state =
 	float_of_int (List.fold_left min 100 y_distances)
 	
 let our_eval player state = 
-	(num_moves_dif player state) +. 0.5 *. (furthest_back player state)
-	
+	let result = (num_moves_dif player state) +. (furthest_back player state) in
+	if player = P1 then result else -1.0 *. result
+
+let modified_eval player state =
+	let result = (num_moves_dif1 player state) +. (furthest_back player state) in
+	if player = P1 then result else -1.0 *. result
 	
 			
 (*let manhattan_eval player state = 
@@ -86,7 +117,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = available_moves state.board P1 in
+					let successors = ordered_available_moves state.board P1 in
 					let v = ref neg_infinity in
 					let alpha = ref alpha in
 					let rec run_through moves = 
@@ -104,7 +135,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = available_moves state.board P2 in
+					let successors = ordered_available_moves state.board P2 in
 					let v = ref infinity in
 					let beta = ref beta in
 					let rec run_through moves = 
@@ -118,7 +149,7 @@ let alphabeta evaluate max_depth state player =
 								beta:= (min !beta !v);
 								run_through tail)) in
 					run_through successors in	
-	let successors = available_moves state.board player in 
+	let successors = ordered_available_moves state.board player in 
 	let best_move = ref (-1, -1, -1, -1, -1, -1) in
 	let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
 	let alpha = neg_infinity in
@@ -143,6 +174,7 @@ let build_minimax_bot evaluate max_depth =
 	alphabeta evaluate max_depth;;
  
 let basic_alphabeta_bot = build_minimax_bot our_eval 2;;
+let modified_alphabeta_bot = build_minimax_bot modified_eval 3;;
 				
 				
 			
