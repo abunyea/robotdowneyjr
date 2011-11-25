@@ -117,7 +117,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = ordered_available_moves state.board P1 in
+					let successors = available_moves state.board P1 in
 					let v = ref neg_infinity in
 					let alpha = ref alpha in
 					let rec run_through moves = 
@@ -135,7 +135,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = ordered_available_moves state.board P2 in
+					let successors = available_moves state.board P2 in
 					let v = ref infinity in
 					let beta = ref beta in
 					let rec run_through moves = 
@@ -149,7 +149,7 @@ let alphabeta evaluate max_depth state player =
 								beta:= (min !beta !v);
 								run_through tail)) in
 					run_through successors in	
-	let successors = ordered_available_moves state.board player in 
+	let successors = available_moves state.board player in 
 	let best_move = ref (-1, -1, -1, -1, -1, -1) in
 	let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
 	let alpha = neg_infinity in
