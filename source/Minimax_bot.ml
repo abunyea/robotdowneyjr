@@ -189,6 +189,77 @@ let alphabeta evaluate max_depth state player =
 	prerr_endline "";
 	best_move;;
 
+let avail_greys_p1 = [(8, 4); (10, 4); (12, 4); (16, 4)]
+let avail_greys_p2 = [(8, 12); (10, 12); (12, 12); (16, 12)]
+
+let available_moves_grey board player = 
+  let moves = available_moves board player in
+  let possible_greys = List.filter (fun (x, y) -> board.(y).(x) = Empty) (if player = P1 then avail_greys_p1 else avail_greys_p2) in
+  let pos_moves = List.fold_left (fun acc (x1, y1, x2, y2, _, _) -> 
+    (List.fold_left (fun acc2 (a, b) -> if (a=x1 && b=y1) || (a=x2&&b=y2) then acc2 else (x1,y1, x2,y2, a, b) :: acc2) [] possible_greys)
+   @ acc) [] moves in
+  if pos_moves = [] then moves else pos_moves (* Don't die if there are no possible moves *)
+
+(* Warning: will always place 1 grey marble
+ * make sure your player has a marble left or this will crash everything!! *)
+let alphabeta_grey evaluate max_depth state player =
+	let start = Unix.time() in
+	let states_examined = ref 0 in
+	
+	(* Should return a value *)
+	let rec max_value (state, alpha, beta) depth: float =
+		(states_examined:= !states_examined + 1);
+				let score = evaluate player state in
+				if depth = 0 then score else
+					let successors = available_moves state.board P1 in
+					let v = ref neg_infinity in
+					let alpha = ref alpha in
+					let rec run_through moves = 
+						match moves with
+							| [] -> !v
+							| move::tail -> (
+							let state' = update_board state move in
+							let best' = min_value (state', !alpha, beta) (depth - 1) in
+							v:= (max !v best');
+							if !v >= beta then !v else (
+								alpha:= (max !alpha !v);
+								run_through tail)) in
+					run_through successors
+	and min_value (state, alpha, beta) depth: float = 
+		(states_examined:= !states_examined + 1);
+				let score = evaluate player state in
+				if depth = 0 then score else
+					let successors = available_moves state.board P2 in
+					let v = ref infinity in
+					let beta = ref beta in
+					let rec run_through moves = 
+						match moves with
+							| [] -> !v
+							| move::tail -> (
+							let state' = update_board state move in
+							let best' = max_value (state', alpha, !beta) (depth - 1) in
+							v:= (min !v best');
+							if !v <= alpha then !v else (
+								beta:= (min !beta !v);
+								run_through tail)) in
+					run_through successors in	
+	let successors = available_moves_grey state.board player in 
+	let best_move = ref (-1, -1, -1, -1, -1, -1) in
+	let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
+	let alpha = neg_infinity in
+	let beta = infinity in
+	let rec find_best moves =
+		match moves with
+			| [] -> !best_move 
+			| x::t -> let state' = update_board state x in
+				let best' = start_func (state', alpha, beta) max_depth in
+				if comparison best' !best then (best:= best'; best_move:= x; find_best t) else find_best t in
+	let best_move = find_best successors in
+	let time_took = Unix.time() -. start in
+	prerr_endline ("Examined: " ^ (string_of_int !states_examined) ^ " states");
+	prerr_endline ("Took: " ^ (string_of_float time_took) ^ " seconds");
+	best_move;;
+
 
 (* We require a bot to be of type state -> player -> move *)
 (* However, alphabeta is of the form (player -> state -> float) -> int -> state -> player -> move*)
@@ -200,4 +271,5 @@ let basic_alphabeta_bot = build_minimax_bot our_eval 2;;
 let test_alphabeta_bot = build_minimax_bot our_eval 1;;
 let modified_alphabeta_bot = build_minimax_bot modified_eval 2;;
 let another_alphabeta_bot = build_minimax_bot (dot [num_moves_dif1; furthest_back] [0.285711323304; 0.173743948571 ]) 2;;
+let alphabeta_grey_bot = alphabeta_grey our_eval 2;;
 			
