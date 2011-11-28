@@ -169,13 +169,13 @@ let alphabeta evaluate max_depth state player =
 	prerr_endline ("Took: " ^ (string_of_float time_took) ^ " seconds");
 	best_move;;
 
-let avail_greys_p1 = [(8, 4), (10, 4), (12, 4), (16, 4)]
-let avail_greys_p2 = [(8, 12), (10, 12), (12, 12), (16, 12)]
+let avail_greys_p1 = [(8, 4); (10, 4); (12, 4); (16, 4)]
+let avail_greys_p2 = [(8, 12); (10, 12); (12, 12); (16, 12)]
 
 let available_moves_grey board player = 
   let moves = available_moves board player in
   let possible_greys = List.filter (fun (x, y) -> board.(y).(x) = Empty) (if player = P1 then avail_greys_p1 else avail_greys_p2) in
-  List.fold_left (fun acc (x1, y1, x2, y2) -> 
+  List.fold_left (fun acc (x1, y1, x2, y2, _, _) -> 
     (List.fold_left (fun acc2 (a, b) -> if (a=x1 && b=y1) || (a=x2&&b=y2) then acc2 else (x1,y1, x2,y2, a, b) :: acc2) [] possible_greys)
    @ acc) [] moves
 
