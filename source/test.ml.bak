@@ -1,0 +1,79 @@
+
+type space = P1 | P2 | Grey | Empty | Void;;
+type move = (int * int) list;;
+type board = space list list;;
+
+
+let char_to_space ch =
+	match ch with
+		| ' ' -> Void
+		| '0' -> Empty
+		| '1' -> P1
+		| '2' -> P2
+		| '3' -> Grey
+		| _ -> failwith "Invalid character";;
+
+let space_to_char space = 
+	match space with
+		| P1 -> '1'
+		| P2 -> '2'
+		| Grey -> 'G'
+		| Empty -> 'O'
+		| Void -> ' ';;
+
+
+
+let rec parse_line line : space list =
+	let rec run_through index = 
+		if index == 25 then [] else
+		(char_to_space line.[index])::(run_through (index + 1)) in
+	run_through 0;;
+	
+let read_input() : board = 
+		let rec helper board line_number = 
+			if line_number == 17 then List.rev board else
+			let line = read_line() in
+			helper ((parse_line line)::board) (line_number + 1) in
+		helper [] 0;;
+(*
+let do_move board move =
+	let helper (x1, y1) (x2, y2) =
+		let item_to_move = List.nth (List.nth y1 board) x1 in
+		let build_cols col =
+			
+			
+			
+			
+			
+			let rec build_cols_helper new_col old_col index = 
+				if index = y2 then 
+					match old_col with
+						| h::t -> new_col@(item_to_move::t)
+						| x -> new_cow@[item_to_move]
+				else 
+					match old_col with
+						| h::t -> build_cols_helper new_col@
+				match old_col with
+					| h::t -> if index = y2 then  else
+						
+			 
+		let rec build_rows new_rows old_rows row_num = 
+			match old_rows with
+				| [] -> new_rows
+				| h::t ->
+			 
+		
+		match move with
+		| (start, destination) -> 
+			*)
+	
+let print_board board = 
+	let rec helper row = 
+		match row with
+			| h::t -> ((List.iter (fun a -> print_char(space_to_char a)) h);
+			 print_newline(); helper t)
+			| _ -> () in
+		helper board;;
+
+let brd = read_input() in
+print_board brd 

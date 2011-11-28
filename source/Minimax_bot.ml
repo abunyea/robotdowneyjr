@@ -63,6 +63,9 @@ let num_moves_dif1 player state =
 	let dif = (List.fold_left their_fold_func 0 their_pieces) - (List.fold_left our_fold_func 0 our_pieces) in
 	float_of_int dif
 	
+
+let dot features weights player state = 
+	List.fold_left2 (fun acc f w -> acc +. (f player state) *. w) 0. features weights
 	
 let furthest_back player state = 
 	let board = state.board in
@@ -174,7 +177,7 @@ let build_minimax_bot evaluate max_depth =
 	alphabeta evaluate max_depth;;
  
 let basic_alphabeta_bot = build_minimax_bot our_eval 2;;
-let modified_alphabeta_bot = build_minimax_bot modified_eval 3;;
-				
-				
+let test_alphabeta_bot = build_minimax_bot our_eval 1;;
+let modified_alphabeta_bot = build_minimax_bot modified_eval 2;;
+let another_alphabeta_bot = build_minimax_bot (dot [num_moves_dif1; furthest_back] [0.285711323304; 0.173743948571 ]) 2;;
 			

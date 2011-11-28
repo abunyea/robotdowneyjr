@@ -12,6 +12,7 @@ type state = { player : space;
    related info. The player is who goes first *)
 val read_initial_input : unit -> space * state
 
+val copy_state : state -> state
 (* Read a single line containing state
    info, and construct a new state using
    the previous state *)

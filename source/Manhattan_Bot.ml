@@ -30,8 +30,6 @@ let manhattan_bot state player =
 		List.filter (fun x -> improve state.board x >= max_improve state.board move_set) move_set in
 		
 					
-	prerr_endline "Constructed moves list";	
-  print_movelist best_list;
     match best_list with
     [] -> failwith "no moves"
 		| _ -> List.nth best_list (Random.int (List.length best_list))

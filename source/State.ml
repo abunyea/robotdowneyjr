@@ -16,6 +16,16 @@ let rec parse_line line : space array =
           run_through (index + 1)) in
 	run_through 0
 
+let copy_state state = 
+	let board' = copy_board state.board in
+	  { player=state.player;
+    status=state.status;
+    time1=state.time1;
+    time2=state.time2;
+    board=board';
+    grey_remain_1=state.grey_remain_1;
+    grey_remain_2=state.grey_remain_2 }   
+	
 let read_initial_input () = 
   let rec run_through_board board index = 
 	if index = 17 then board else

@@ -56,6 +56,10 @@ let print_board board =
 		((Array.iter (fun x -> prerr_char(space_to_char x)) row); prerr_newline()) in
 	Array.iter (fun x -> print_row x) board
 
+let print_board_standard board = 
+	let print_row row =
+		((Array.iter (fun x -> print_char(space_to_char x)) row); print_newline()) in
+	Array.iter (fun x -> print_row x) board
 let string_of_move (x1, y1, x2, y2, x3, y3) =
   (string_of_int y1) ^ " " ^ (string_of_int x1) ^ " " ^
   (string_of_int y2) ^ " " ^ (string_of_int x2) ^ " " ^
@@ -97,7 +101,8 @@ let has_won board player =
 		if player = P1 then 
 			(get_home_pieces board P2, P1)
 		else (get_home_pieces board P1, P2) in
-	List.length (List.filter (fun x -> x = winning_piece) home) >= 5
+	let (ours, non_empty) = List.fold_left (fun (ours, non_empty) piece -> if piece = winning_piece then (ours + 1, non_empty + 1) else (if piece = Empty then (ours, non_empty) else (ours, non_empty + 1))) (0, 0) home in
+	(non_empty = 10 && ours >= 5)
 	
 let rec build_piece_list board player bound1 bound2 pieces = 
     if bound1 = 16 && bound2 = 24 then pieces 
@@ -164,6 +169,21 @@ let ordered_available_moves b player =
 		let abs2 = abs(y2 - y0) in
 		if abs1 > abs2 then 1 else (if abs1 < abs2 then -1 else 0) in
 	take (List.sort min_v_dist (available_moves b player)) 20
+	
+
+
+(* Generates random board with n pieces in the opponents endzone 
+let random_endgame_state endzone_pieces = 
+	let board = Array.make 17 (Array.make 25 Void) in
+	let rec run_through row_num =
+		if row_num = 17 then () else
+			(board.(row_num) <- Array.make 25 Void);
+			run_through (row_num + 1); in
+	run_through 0;
+	let home_coords = get_p2_home in 
+	let put_home_piece pieces_put = 
+		let (y, x) = List.nth home_coords Random.int 0 10 *)
+	
 	
 let print_movelist lst =
 	let print_func (a, b, c, d, e, f) = 

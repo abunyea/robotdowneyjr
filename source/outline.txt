@@ -1,0 +1,19 @@
+For each weight i:
+	Initialize a possibleWeightVector to 
+	w(j) = 1.0 if j = i, 0 otherwise
+	If < 40, then initialize random weight vectors for the rest
+	
+	
+	Loop: 
+	Run X simulations against our best bot (until we beat it 80% of the time, then start playing each other)
+		Score = how many moves we win/lose by
+		Total score
+	
+	Take top 20 
+	Create 20 new weight vectors:
+	
+	Repeat
+	
+	
+	
+	

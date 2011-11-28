@@ -14,10 +14,6 @@ let turns = ref 0;;
 let baby_bot state player = 
 	Random.self_init ();
   let move_set = available_moves state.board player in
-	
-	let num_moves = List.length move_set in
-	total_moves:= !total_moves + num_moves;
-	turns:= !turns + 1;
 	(* let stats_string = ("Move Stats:\t" ^ string_of_int(!turns) ^ "\t" ^ string_of_int(num_moves) ^ "\t" ^ string_of_float(float_of_int(!total_moves) /. float_of_int(!turns)) ^ "\n") in
 	 prerr_endline stats_string; *)
 	
@@ -37,10 +33,9 @@ let baby_bot state player =
 					then ([move],result)
 				else (set,best) in
 				
-	let best_list = 
-		fst (List.fold_left (optimize center_dist LT) ([],12) (
-		fst (List.fold_left (optimize endzone_dist LT) ([],16) (
-		fst (List.fold_left (optimize vert_dist GT) ([],0) move_set))))) in
+	let best_list = fst (List.fold_left (optimize vert_dist GT) ([],0) move_set) in
+	let best_list = fst (List.fold_left (optimize endzone_dist LT) ([], 16) best_list) in
+	let best_list = fst (List.fold_left (optimize center_dist LT) ([],12) best_list) in
 			
 	(* prerr_endline "Constructed moves list"; *)
  (* print_movelist best_list; *)

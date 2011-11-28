@@ -1,0 +1,2 @@
+all :
+	ocamlopt -o learn Unix.cmxa Str.cmxa Board.mli Board.ml State.mli State.ml Minimax_bot.ml Baby_bot.mli Baby_bot.ml Reader.ml Evaluations.mli Evaluations.ml Beam_searcher.ml

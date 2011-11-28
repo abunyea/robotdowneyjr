@@ -4,6 +4,7 @@ type move = int * int * int * int * int * int
 type move_set = move list
 
 val print_board : board -> unit
+val print_board_standard : board -> unit
 val copy_board : board -> board
 val do_move : board -> move -> board
 val char_to_space : char -> space

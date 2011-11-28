@@ -1,0 +1,6 @@
+Before each move, execute all moves and see if result is win. If it isn't redo search
+
+When we search, need to limit the available moves
+	- Any marble not in home: all moves
+	- If all vacant spots in home are reachable, don't move any home marble
+		- If they aren't reachable, 
