@@ -1,6 +1,7 @@
 open Minimax_bot;;
 open Baby_bot;;
 open Evaluations;;
+open Print;;
 open State;;
 open Board;;
 open Unix;;
@@ -11,7 +12,7 @@ type score = int option;;
 type node = weight_vector * score;;
 
 Random.self_init();;
-let cNUM_ITERATIONS = 2;; 
+let cNUM_ITERATIONS = 5;; 
 let cRANDOM_CANDIDATES = 3;;
 let cBEST_CANDIDATES = 7;;
 let cPOOL_SIZE = cRANDOM_CANDIDATES + cBEST_CANDIDATES;;
@@ -58,7 +59,9 @@ let print_round nodes iteration time_took =
 	let it_str = ("Iteration " ^ (string_of_int iteration)) in
 	print_endline it_str;
 	print_line it_str;
-	print_line ("Took: " ^ (string_of_float time_took) ^ " seconds");
+	let time_st = ("Took: " ^ (string_of_float time_took) ^ " seconds");
+	print_line time_str;
+	print_endline time_str
 	List.iter print_node nodes
 	
 	
@@ -91,18 +94,21 @@ let harvest_nodes nodes =
 	let sorted = List.sort compare_node nodes in
 	let shuffle_list lst = 
 		List.sort (fun _ _ -> Random.int 3 - 1) lst in
+		
 	let take lst n =
 		let rec helper taken not_taken num_taken =
 			if num_taken = n then taken else (
 				match not_taken with
 					| [] -> taken
 					| x::t -> helper (x::taken) t (num_taken + 1)) in
+		helper [] lst 0 in
 	let rec take_best (best, rest) num_left= 
 		match rest with
 			| [] -> (best, rest)
 			| x::t -> if num_left = 0 then (best, rest) else (take_best (x::best, t) (num_left - 1)) in
 	let (best, rest) = take_best ([], sorted) cBEST_CANDIDATES in
-	best @ (take rest cRANDOM_CANDIDATES);;
+	let rest = shuffle_list rest in
+	(best @ (take rest cRANDOM_CANDIDATES))
 	
 	
 

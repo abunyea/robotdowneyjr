@@ -271,5 +271,5 @@ let basic_alphabeta_bot = build_minimax_bot our_eval 2;;
 let test_alphabeta_bot = build_minimax_bot our_eval 1;;
 let modified_alphabeta_bot = build_minimax_bot modified_eval 2;;
 let another_alphabeta_bot = build_minimax_bot (dot [num_moves_dif1; furthest_back] [0.285711323304; 0.173743948571 ]) 2;;
-let alphabeta_grey_bot = alphabeta_grey our_eval 2;;
+let grey_alphabeta_bot = alphabeta_grey our_eval 2;;
 			
