@@ -53,7 +53,7 @@ let update_board state move =
 		(if x3 <> -1 && y3 <> -1 then 
 			(if state.board.(y1).(x1) = P1 then 
 				(state.grey_remain_1 - 1, state.grey_remain_2) else
-				(state.grey_remain_1, state.grey_remain_2)) else
+				(state.grey_remain_1, state.grey_remain_2 - 1)) else
 			(state.grey_remain_1, state.grey_remain_2)) in
   { player=state.player;
     status=state.status;

@@ -42,11 +42,15 @@ let rec generate_move_sequence player =
 
 let rec ids player initial = 
 	if !depth > cMAX_DEPTH then (depth:= 1; baby_bot initial player) else (
-	
+	let transposition_table = Hashtbl.create 200 in
 	let rec ids_helper() =
 		if Stack.is_empty q then [] else (
 			let (board,sequence) = Stack.pop q in
-			
+			if (Hashtbl.mem transposition_table (board, sequence))
+				then 
+					ids_helper()
+				else (
+			Hashtbl.add transposition_table (board, sequence) true;
 			nodes_examined:= !nodes_examined + 1;			
 			if (has_won board player) then sequence
 			else (
@@ -61,7 +65,7 @@ let rec ids player initial =
 					
 				List.iter do_and_add move_set;
 				ids_helper()
-				)) in
+				))) in
 				
 		let path = ids_helper() in
 		match path with

@@ -15,8 +15,8 @@ let cNUM_ITERATIONS = 2;;
 let cRANDOM_CANDIDATES = 3;;
 let cBEST_CANDIDATES = 7;;
 let cPOOL_SIZE = cRANDOM_CANDIDATES + cBEST_CANDIDATES;;
-let cNUM_MOVES = 50;;
-let cNUM_SUCCESSORS = 5;;
+let cNUM_MOVES = 35;;
+let cNUM_SUCCESSORS = 3;;
 let path = "beam" ^ (string_of_int (Random.int 200)) ^ ".txt";;
 print_endline ("Output written to: " ^ path);;
 
@@ -89,12 +89,20 @@ let check_if_done nodes =
 (* Takes the top cBEST_CANDIDATES nodes and then cRANDOM_CANDIDATES random nodes *)
 let harvest_nodes nodes = 
 	let sorted = List.sort compare_node nodes in
+	let shuffle_list lst = 
+		List.sort (fun _ _ -> Random.int 3 - 1) lst in
+	let take lst n =
+		let rec helper taken not_taken num_taken =
+			if num_taken = n then taken else (
+				match not_taken with
+					| [] -> taken
+					| x::t -> helper (x::taken) t (num_taken + 1)) in
 	let rec take_best (best, rest) num_left= 
 		match rest with
 			| [] -> (best, rest)
 			| x::t -> if num_left = 0 then (best, rest) else (take_best (x::best, t) (num_left - 1)) in
 	let (best, rest) = take_best ([], sorted) cBEST_CANDIDATES in
-	best;;
+	best @ (take rest cRANDOM_CANDIDATES);;
 	
 	
 
@@ -169,7 +177,7 @@ let find_weights (features : (space -> state -> float) list) : (float list) =
 		
 
 
-find_weights [num_moves_dif1; furthest_back]
+find_weights [num_moves_dif; furthest_back]
 	
 
 

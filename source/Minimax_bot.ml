@@ -1,3 +1,4 @@
+open Print
 open Board
 open State
 
@@ -15,19 +16,36 @@ let min_trans_table : (board, float) Hashtbl.t = Hashtbl.create 400000;;
 let add_to table board score = 
 	Hashtbl.add table board score;;
 
+let get_available_moves board player =
+	available_moves board player 
+	(* let moves = available_moves board player in
+	List.filter (fun (x,y,x',y',_,_) -> (player = P1 && y' <= y) || (player = P2 && y' >= y)) moves *)
 
 let num_moves_dif player state =
 	let board = state.board in
-	let other_player = if player = P1 then P2 else P1 in
+	let other_player = toggle_player player in
 	let our_pieces = build_piece_list board player 0 0 [] in
 	let their_pieces = build_piece_list board other_player 0 0 [] in
 	
 	let build_num_moves player sum (x, y) = 
 		let (x2, y2) = if player = P1 then (12,0) else (12,16) in
 		let v_dist = abs(y2 - y) in
-		let moves = (if x = 12 || (x > 12 && ((x - y) <= 12)) || (x < 12 && ((x + y) >= 12)) then
-			v_dist else
-			v_dist + (if (x > 12) then (x - y - 12) / 2 else (12 - (x+y))/2)) in
+		let moves = 
+			if player = P2
+				then 
+					(if x = 12 || (x > 12 && ((x - y) <= 12)) || (x < 12 && ((x + y) >= 12)) 
+						then
+							v_dist 
+						else
+							v_dist + (if (x > 12) then (x - y - 12) / 2 else (12 - (x+y))/2))
+				 else
+						(if x = 12 || (x > 12 && ((x + y) <= 28)) || (x < 12 && ((y-x) >= 4)) 
+						then
+							v_dist 
+						else
+							v_dist + (if (x > 12) then (x + y - 28) / 2 else (y - x - 4)/2))
+				
+				 in
 		sum + moves in
 		
 	let our_fold_func = build_num_moves player in
@@ -70,7 +88,7 @@ let dot features weights player state =
 let furthest_back player state = 
 	let board = state.board in
 	let pieces = build_piece_list board player 0 0 [] in
-	let (x_home, y_home) = if player = P1 then (12,16) else (12, 0) in
+	let (_, y_home) = if player = P1 then (12,16) else (12, 0) in
 	let y_distances = List.map (fun (x,y) -> abs(y_home - y)) pieces in
 	float_of_int (List.fold_left min 100 y_distances)
 	
@@ -120,7 +138,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = available_moves state.board P1 in
+					let successors = get_available_moves state.board P1 in
 					let v = ref neg_infinity in
 					let alpha = ref alpha in
 					let rec run_through moves = 
@@ -138,7 +156,7 @@ let alphabeta evaluate max_depth state player =
 		(states_examined:= !states_examined + 1);
 				let score = evaluate player state in
 				if depth = 0 then score else
-					let successors = available_moves state.board P2 in
+					let successors = get_available_moves state.board P2 in
 					let v = ref infinity in
 					let beta = ref beta in
 					let rec run_through moves = 
@@ -152,7 +170,8 @@ let alphabeta evaluate max_depth state player =
 								beta:= (min !beta !v);
 								run_through tail)) in
 					run_through successors in	
-	let successors = available_moves state.board player in 
+	let successors = get_available_moves state.board player in 
+	let num_successors = List.length successors in
 	let best_move = ref (-1, -1, -1, -1, -1, -1) in
 	let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
 	let alpha = neg_infinity in
@@ -165,8 +184,9 @@ let alphabeta evaluate max_depth state player =
 				if comparison best' !best then (best:= best'; best_move:= x; find_best t) else find_best t in
 	let best_move = find_best successors in
 	let time_took = Unix.time() -. start in
-	prerr_endline ("Examined: " ^ (string_of_int !states_examined) ^ " states");
-	prerr_endline ("Took: " ^ (string_of_float time_took) ^ " seconds");
+	prerr_endline ("Examined " ^ (string_of_int !states_examined) ^ " states starting with a branching factor of " ^ (string_of_int num_successors));
+	prerr_endline ("Took " ^ (string_of_float time_took) ^ " seconds" ^ " at depth " ^ (string_of_int max_depth));
+	prerr_endline "";
 	best_move;;
 
 
