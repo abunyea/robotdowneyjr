@@ -175,9 +175,10 @@ let avail_greys_p2 = [(8, 12); (10, 12); (12, 12); (16, 12)]
 let available_moves_grey board player = 
   let moves = available_moves board player in
   let possible_greys = List.filter (fun (x, y) -> board.(y).(x) = Empty) (if player = P1 then avail_greys_p1 else avail_greys_p2) in
-  List.fold_left (fun acc (x1, y1, x2, y2, _, _) -> 
+  let pos_moves = List.fold_left (fun acc (x1, y1, x2, y2, _, _) -> 
     (List.fold_left (fun acc2 (a, b) -> if (a=x1 && b=y1) || (a=x2&&b=y2) then acc2 else (x1,y1, x2,y2, a, b) :: acc2) [] possible_greys)
-   @ acc) [] moves
+   @ acc) [] moves in
+  if pos_moves = [] then moves else pos_moves (* Don't die if there are no possible moves *)
 
 (* Warning: will always place 1 grey marble
  * make sure your player has a marble left or this will crash everything!! *)
