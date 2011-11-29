@@ -1,6 +1,8 @@
 open Board
+open Print
 open State
 open JohnRocker_bot
+open Greedy_bot
 open Baby_bot
 open Minimax_bot
 open Manhattan_Bot
@@ -11,16 +13,34 @@ let middle_distance = 8
    before we switch to ending bot*)
 let num_ending = 8
 
+let get_grey_row player = if player = P1 then 5 else 11 
+
 (* Criteria for switching to john rocker bot:*)
 (*  all pieces in last 6 rows. At least 5 in last 4 *)
 
 let build_piece_list_a board player = 
 	build_piece_list board player 0 0 [];;
 
+let num_moves = ref 0
 let middle = ref false
+let use_grey = ref false
 let ending = ref false
 let closer = ref false
 
+let check_grey state player : unit = 
+	let remaining = if player = P1 then state.grey_remain_1 else state.grey_remain_2 in
+	if remaining = 0 then use_grey:= false else
+	(if not !use_grey then
+		let grey_row = get_grey_row player in
+		let our_pieces = build_piece_list_a state.board player in
+		let their_pieces = build_piece_list_a state.board (toggle_player player) in
+		let ours_before = List.fold_left (fun acc (x, y) -> if (player = P1 && y > grey_row) then (acc + 1) else if (player = P2 && y < grey_row) then (acc + 1) else acc) 0 our_pieces in
+		let theirs_after = List.fold_left (fun acc (x, y) -> if (player = P1 && y >= grey_row) then (acc + 1) else if (player = P2 && y <= grey_row) then (acc + 1) else acc) 0 their_pieces in
+		if theirs_after = 10 (* || (theirs_after + ours_before >= 18) *) then
+			(prerr_endline "Time to place some greys";
+			 use_grey:= true))
+		
+		
 (* checks distance between furthest marbles on each side,
  * updates middle *)
 let check_middle state : unit = 
@@ -29,7 +49,8 @@ let check_middle state : unit =
     let p2_list = build_piece_list_a state.board P2 in
     let furthest_p1 = List.fold_left (fun a (_, x) -> min a x) 19 p1_list in
     let furthest_p2 = List.fold_left (fun a (_, x) -> max a x) (-1) p2_list in
-    middle := abs (furthest_p1 - furthest_p2) <= middle_distance
+    middle := abs (furthest_p1 - furthest_p2) <= middle_distance;
+		if !middle then (prerr_endline ("Switch to alphabeta at move " ^ (string_of_int !num_moves))) else ()
 
 (* updates ending if an ending state is reached *)
 let check_ending state : unit = 
@@ -45,7 +66,16 @@ let check_ending state : unit =
       (fun a (_, y) -> if (if state.player = P1 then (>) else (<)) 
          y our_last then a+1 else a)
        0 their_list in
-    ending := num_behind >= num_ending
+    ending := num_behind >= num_ending;
+		if !ending then (prerr_endline ("Switch to end_bot at move " ^ (string_of_int !num_moves))) else ()
+		
+let place_grey (x1, y1, x2, y2, x3, y3) state player =
+	let grey_row = get_grey_row player in
+	let possible_spots = List.filter (fun (x, y) -> state.board.(y).(x) = Empty) [(11, grey_row); (13, grey_row); (9, grey_row); (15, grey_row)] in
+	match possible_spots with
+		| [] -> (x1, y1, x2, y2, x3, y3)
+		| (x, y)::t -> (x1, y1, x2, y2, x, y)
+	
 
 let check_closer state player : unit =
 	if not !closer then
@@ -55,24 +85,31 @@ let check_closer state player : unit =
 	if (num_less_four >= 6 && num_less_six = 10) then (
 		prerr_endline "Bringing in the lefty.."; closer:= true) else ()
 	
-let sixminuteab_bot state player =
+let build_sixminuteab_bot start_bot middle_bot end_bot closer_bot state player =
+	incr num_moves;
   check_middle state;
-  if not !middle then
-	(* Starter *)
-    baby_bot state player
+	check_grey state player;
+	check_ending state;
+	check_closer state player;
+	let bot = (
+		match (!use_grey, !middle, !ending, !closer) with
+		  | (true, _, _, _) -> grey_alphabeta_bot 
+			| (false, false, false, false) -> start_bot
+			| (_, true, false, false) -> middle_bot
+			| (_, _, true, false) -> end_bot
+			| (_, _, _, true) -> closer_bot) in
+	bot state player
 
-  else (check_ending state;
-  if not !ending then
-    (* Middle Relief *) 
-			basic_alphabeta_bot state player
+let sixminutemanhattan_bot state player = 		
+	build_sixminuteab_bot manhattan_bot basic_alphabeta_bot manhattan_bot rocker_bot state player
 
-  else (check_closer state player;
-	if not !closer then
-		(* Set up man *)
-			baby_bot state player
-		else 
-		(* Closer *)
-			rocker_bot state player))
-			
+let sixminuteab_bot state player =
+	build_sixminuteab_bot mustache_minimax_bot mustache_minimax_bot mustache_minimax_bot rocker_bot state player
+	
+let sixminutetest_bot state player =
+	build_sixminuteab_bot greedy_bot greedy_bot greedy_bot rocker_bot state player
+
+let sixminutebeam_bot state player =
+	build_sixminuteab_bot beam_beta_bot beam_beta_bot beam_beta_bot rocker_bot state player
 	
     
