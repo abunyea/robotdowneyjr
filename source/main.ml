@@ -1,7 +1,6 @@
 open Board;;
 open State;;
 open Evaluations;;
-open Random_bot;;
 open Manhattan_Bot;;
 open Baby_bot;;
 open Test_bot;;

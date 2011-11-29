@@ -138,10 +138,13 @@ let available_moves b player =
   let step_list (x,y) : move list= 
     List.flatten([(if x+2 < 25 && b.(y).(x+2) = Empty then [(x,y,x+2,y, -1, -1)] else []);
       (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y, -1, -1)] else []);
-      (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1, -1, -1)] else []);
-      (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1, -1, -1)] else []);
+     
+	(if player = P1 then (
+	  (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1, -1, -1)] else []);
+      (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1, -1, -1)] else []))
+	else (
       (if x+1 < 25 && y+1 < 17 && b.(y+1).(x+1) = Empty then [(x,y,x+1,y+1, -1, -1)] else []);
-      (if x-1 >= 0 && y+1 < 17 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1, -1, -1)] else [])]) in
+      (if x-1 >= 0 && y+1 < 17 && b.(y+1).(x-1) = Empty then [(x,y,x-1,y+1, -1, -1)] else [])))]) in
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)
@@ -165,10 +168,11 @@ let available_moves b player =
      (if (x+2 < 25 && y-2 >= 0 && b.(y-1).(x+1) <> Void && b.(y-1).(x+1) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+2 && b=y-2) lst) && b.(y-2).(x+2)=Empty)
       then (u,v,x+2,y-2, -1, -1)::(jump_list ((x,y)::lst) (x+2,y-2) (u,v)) else []) in
+	(List.fold_left (fun acc x -> (jump_list [] x x)@acc) 
+                          [] (build_piece_list b player 0 0 [])) @
      (List.fold_left (fun acc x -> (step_list x)@acc) 
                         [] (build_piece_list b player 0 0 []))
-      @(List.fold_left (fun acc x -> (jump_list [] x x)@acc) 
-                          [] (build_piece_list b player 0 0 []))
+      
 
 let ordered_available_moves b player = 
 	let (x0, y0) = if player = P1 then (12,0) else (12,16) in
