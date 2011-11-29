@@ -34,7 +34,7 @@ let check_grey state player : unit =
 		let grey_row = get_grey_row player in
 		let our_pieces = build_piece_list_a state.board player in
 		let their_pieces = build_piece_list_a state.board (toggle_player player) in
-		let ours_before = List.fold_left (fun acc (x, y) -> if (player = P1 && y > grey_row) then (acc + 1) else if (player = P2 && y < grey_row) then (acc + 1) else acc) 0 our_pieces in
+		let ours_before = List.fold_left (fun acc (x, y) -> if (player = P1 && y > 12) then (acc + 1) else if (player = P2 && y < 12) then (acc + 1) else acc) 0 our_pieces in
 		let theirs_after = List.fold_left (fun acc (x, y) -> if (player = P1 && y >= grey_row) then (acc + 1) else if (player = P2 && y <= grey_row) then (acc + 1) else acc) 0 their_pieces in
 		if theirs_after = 10 (* || (theirs_after + ours_before >= 18) *) then
 			(prerr_endline "Time to place some greys";
