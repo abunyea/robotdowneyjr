@@ -177,8 +177,8 @@ let alphabeta evaluate max_depth state player =
 	prerr_endline "";
 	best_move;;
 
-let avail_greys_p1 = [(8, 4); (10, 4); (12, 4); (16, 4)]
-let avail_greys_p2 = [(8, 12); (10, 12); (12, 12); (16, 12)]
+let avail_greys_p1 = [(7, 5); (9, 5); (11, 5); (13, 5); (15, 5); (17,5)]
+let avail_greys_p2 = [(7, 11); (9, 11); (11, 11); (13, 11); (15, 11); (17,11)]
 
 let available_moves_grey board player = 
   let moves = available_moves board player in
