@@ -31,21 +31,12 @@ let num_moves_dif player state =
 		let (x2, y2) = if player = P1 then (12,0) else (12,16) in
 		let v_dist = abs(y2 - y) in
 		let moves = 
-			if player = P2
-				then 
-					(if x = 12 || (x > 12 && ((x - y) <= 12)) || (x < 12 && ((x + y) >= 12)) 
-						then
-							v_dist 
-						else
-							v_dist + (if (x > 12) then (x - y - 12) / 2 else (12 - (x+y))/2))
-				 else
-						(if x = 12 || (x > 12 && ((x + y) <= 28)) || (x < 12 && ((y-x) >= 4)) 
-						then
-							v_dist 
-						else
-							v_dist + (if (x > 12) then (x + y - 28) / 2 else (y - x - 4)/2))
-				
-				 in
+			if x - y <= 12 && y - x <= 4 && x + y >= 12 && x + y <= 28 then
+				v_dist
+			else (if y < 9 then
+				v_dist + (if (x > 12) then (x - y - 12) / 2 else (12 - (x+y))/2)
+			else
+				v_dist + (if (x > 12) then (x + y - 28) / 2 else (y - x - 4)/2)) in
 		sum + moves in
 		
 	let our_fold_func = build_num_moves player in
