@@ -1,6 +1,7 @@
 open Print
 open Board
 open State
+open Mustache
 
 
 let cWINNING_SCORE = 1000.;;
@@ -37,13 +38,13 @@ let num_moves_dif player state =
 				v_dist + (if (x > 12) then (x - y - 12) / 2 else (12 - (x+y))/2)
 			else
 				v_dist + (if (x > 12) then (x + y - 28) / 2 else (y - x - 4)/2)) in
-		sum + moves in
+		sum +. (float_of_int moves) in
 		
 	let our_fold_func = build_num_moves player in
 	let their_fold_func = build_num_moves other_player in
 	
-	let dif = (List.fold_left their_fold_func 0 their_pieces) - (List.fold_left our_fold_func 0 our_pieces) in
-	float_of_int dif
+	let dif = (List.fold_left their_fold_func 0. their_pieces) -. (List.fold_left our_fold_func 0. our_pieces) in
+	dif
 
 
 let num_moves_dif1 player state =
@@ -124,8 +125,7 @@ let alphabeta evaluate max_depth state player =
 	(* Should return a value *)
 	let rec max_value (state, alpha, beta) depth: float =
 		(states_examined:= !states_examined + 1);
-				let score = evaluate player state in
-				if depth = 0 then score else
+				if depth = 0 then (evaluate player state) else
 					let successors = get_available_moves state.board P1 in
 					let v = ref neg_infinity in
 					let alpha = ref alpha in
@@ -142,8 +142,7 @@ let alphabeta evaluate max_depth state player =
 					run_through successors 
 	and min_value (state, alpha, beta) depth: float = 
 		(states_examined:= !states_examined + 1);
-				let score = evaluate player state in
-				if depth = 0 then score else
+				if depth = 0 then (evaluate player state) else
 					let successors = get_available_moves state.board P2 in
 					let v = ref infinity in
 					let beta = ref beta in
@@ -197,8 +196,7 @@ let alphabeta_grey evaluate max_depth state player =
 	(* Should return a value *)
 	let rec max_value (state, alpha, beta) depth: float =
 		(states_examined:= !states_examined + 1);
-				let score = evaluate player state in
-				if depth = 0 then score else
+				if depth = 0 then (evaluate player state) else
 					let successors = available_moves state.board P1 in
 					let v = ref neg_infinity in
 					let alpha = ref alpha in
@@ -215,8 +213,7 @@ let alphabeta_grey evaluate max_depth state player =
 					run_through successors
 	and min_value (state, alpha, beta) depth: float = 
 		(states_examined:= !states_examined + 1);
-				let score = evaluate player state in
-				if depth = 0 then score else
+				if depth = 0 then (evaluate player state) else
 					let successors = available_moves state.board P2 in
 					let v = ref infinity in
 					let beta = ref beta in
@@ -260,7 +257,9 @@ let dot features weights player state =
 	
 let basic_alphabeta_bot = build_minimax_bot our_eval 2;;
 let test_alphabeta_bot = build_minimax_bot our_eval 1;;
-let modified_alphabeta_bot = build_minimax_bot modified_eval 2;;
+let depth_three_bot = build_minimax_bot our_eval 3;;
 let beam_beta_bot = build_minimax_bot (dot [num_moves_dif; furthest_back] [0.728156898443; 1.27340872581]) 1;;
 let grey_alphabeta_bot = alphabeta_grey our_eval 2;;
+
+let mustache_minimax_bot = build_minimax_bot basic_mustache_evaluator 2;;
 			
