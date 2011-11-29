@@ -262,4 +262,6 @@ let beam_beta_bot = build_minimax_bot (dot [num_moves_dif; furthest_back] [0.728
 let grey_alphabeta_bot = alphabeta_grey our_eval 2;;
 
 let mustache_minimax_bot = build_minimax_bot basic_mustache_evaluator 2;;
+let winner_bot = build_minimax_bot winning_evaluator 2;;
+let beam_bot = build_minimax_bot beam_evaluator 2;;
 			

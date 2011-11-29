@@ -98,6 +98,7 @@ let get_p2_home board =
 	board.(3).(9); board.(3).(11); board.(3).(13); board.(3).(15)]
 
 
+
 let has_won board player =
 	let (home, winning_piece) = 
 		if player = P1 then 
@@ -105,6 +106,17 @@ let has_won board player =
 		else (get_home_pieces board P1, P2) in
 	let (ours, non_empty) = List.fold_left (fun (ours, non_empty) piece -> if piece = winning_piece then (ours + 1, non_empty + 1) else (if piece = Empty then (ours, non_empty) else (ours, non_empty + 1))) (0, 0) home in
 	(non_empty = 10 && ours >= 5)
+	
+let has_won_modified board player = 
+	let (home, winning_piece) = 
+		if player = P1 then 
+			(get_home_pieces board P2, P1)
+		else (get_home_pieces board P1, P2) in
+	let (ours, non_empty) = List.fold_left (fun (ours, non_empty) piece -> if piece = winning_piece then (ours + 1, non_empty + 1) else (if piece = Empty then (ours, non_empty) else (ours, non_empty + 1))) (0, 0) home in
+	(non_empty >= 9 && ours >= 5)
+	
+let is_game_over board = 
+	(has_won board P1) || (has_won board P2)
 	
 let rec build_piece_list board player bound1 bound2 pieces = 
     if bound1 = 16 && bound2 = 24 then pieces 

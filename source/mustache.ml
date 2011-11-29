@@ -105,14 +105,24 @@ let teutul_dist degree player pieces =
 let mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 player state =
 	let pieces = build_piece_list state.board player 0 0 [] in
 	let avail_moves = available_moves state.board player in
-	w1 *. (stalin_dist d1 player pieces) +.
-	w2 *. (hogan_dist d2 player pieces) +.
-	w3 *. (dali_dist d3 player pieces) -.
-	w4 *. (teutul_dist d4 player avail_moves)
+	let result = (w1 *. (stalin_dist d1 player pieces) +.
+								w2 *. (hogan_dist d2 player pieces) +.
+								w3 *. (dali_dist d3 player pieces) -.
+								w4 *. (teutul_dist d4 player avail_moves)) in
+	if player = P1 then result else -1.0 *. result
 	
 let basic_mustache_evaluator player state = 
 	(mustache_evaluator 10. 1. 1. 1. 0.5 1. 1. 1. (toggle_player player) state) -.
 	(mustache_evaluator 10. 1. 1. 1. 0.5 1. 1. 1. player state)
+	
+let winning_evaluator player state = 
+	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. (toggle_player player) state) -.
+	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. player state)
+
+let beam_evaluator player state =
+	(mustache_evaluator 9.948 1.085 1.417 1.089 0.774 0.799 0.611 0.855 (toggle_player player) state) -.
+	(mustache_evaluator 9.948 1.085 1.417 1.089 0.774 0.799 0.611 0.855 player state)
+	
 	
 				
 

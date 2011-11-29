@@ -109,7 +109,11 @@ let sixminuteab_bot state player =
 let sixminutetest_bot state player =
 	build_sixminuteab_bot greedy_bot greedy_bot greedy_bot rocker_bot state player
 
-let sixminutebeam_bot state player =
-	build_sixminuteab_bot beam_beta_bot beam_beta_bot beam_beta_bot rocker_bot state player
+let sixminutebeam state player =
+	build_sixminuteab_bot beam_bot beam_bot beam_bot rocker_bot state player
+	
+let sixminutewinner state player =
+	build_sixminuteab_bot winner_bot winner_bot winner_bot rocker_bot state player
+	
 	
     
