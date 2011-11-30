@@ -47,7 +47,8 @@ let read_initial_input () =
                              grey_remain_2=d; } )
     | _ -> failwith "Bad input on read_initial_input"
 
-let update_board state move =
+
+let update_board_with_time state time1 time2 move =
 	let (x1, y1, _, _, x3, y3) = move in
 	let (grey1, grey2) = 
 		(if x3 <> -1 && y3 <> -1 then 
@@ -57,17 +58,21 @@ let update_board state move =
 			(state.grey_remain_1, state.grey_remain_2)) in
   { player=state.player;
     status=state.status;
-    time1=state.time1;
-    time2=state.time2;
+    time1=time1;
+    time2=time2;
     board=do_move state.board move;
     grey_remain_1=grey1;
-    grey_remain_2=grey2 }       
+    grey_remain_2=grey2 }   
+		
+				
+let update_board state move =
+	update_board_with_time state state.time1 state.time2 move    
 		
 let read_opponent_input previous = 
   let line = read_line () in
   let numbers = List.map int_of_string (Str.split (Str.regexp_string " ") line) in
     match numbers with 
-		  | a::b::c::d::e::f::g::h::i::[] -> update_board previous (e, d, g, f, i, h)
+		  | a::b::c::d::e::f::g::h::i::[] -> update_board_with_time previous b c (e, d, g, f, i, h)
       | _ -> failwith "Bad input to read_opponent_input"  
 
 

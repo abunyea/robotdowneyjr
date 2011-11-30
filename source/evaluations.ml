@@ -5,8 +5,9 @@ open State
  * to complete the game if the opponent doesn't move *)
 let evaluate1 bot player state = 
   let rec eval s score = 
-    if has_won s.board player then score else 
-       eval (update_board s (bot s player)) (score +. 1.0) in
+    if (has_won s.board player) || (score >= 70.) then score else 
+			(let new_state = update_board s (bot s player) in
+       eval new_state (score +. 1.0)) in
   eval state 0.0
 
 (* Evaluation exactly the same as evaluate1. However we first set all the opponents pieces to empty*)
@@ -36,7 +37,8 @@ let evaluate2 bot player state =
     grey_remain_2=state.grey_remain_2} in
 	let rec evaluate lst times = 
 		if times = 0 then lst else
-			evaluate ((evaluate1 bot player new_state)::lst) (times - 1) in
+			(
+			evaluate ((evaluate1 bot player new_state)::lst) (times - 1)) in
 	let num_times = 5 in
 	let scores = evaluate [] num_times in
 	let sorted = List.sort compare scores in

@@ -18,6 +18,8 @@ val get_p2_home : board -> space list
 
 val get_home_coords : space -> (int * int) list
 val has_won : board -> space -> bool
+val has_won_modified : board -> space -> bool
+val is_game_over : board -> bool
 
 (* Prints a move for std out, with appropriate
    -1s to not place a gray marble. *)

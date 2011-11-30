@@ -3,5 +3,4 @@ open State
 
 (*Calculates the mustache distance *)
 
-val hernandez_bot : state -> space -> move
-val mustache_bot : state -> space -> move
+val ids_bot : int -> state -> space -> move

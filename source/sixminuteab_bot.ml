@@ -3,12 +3,13 @@ open Print
 open State
 open JohnRocker_bot
 open Greedy_bot
+open KeithHernandez_bot
 open Baby_bot
 open Minimax_bot
 open Manhattan_Bot
 
 (* minimum distance before switching to minimax *)
-let middle_distance = 8
+let middle_distance = 2
 (* Number of their marbles that must have passed all of ours
    before we switch to ending bot*)
 let num_ending = 8
@@ -85,35 +86,30 @@ let check_closer state player : unit =
 	if (num_less_four >= 6 && num_less_six = 10) then (
 		prerr_endline "Bringing in the lefty.."; closer:= true) else ()
 	
-let build_sixminuteab_bot start_bot middle_bot end_bot closer_bot state player =
+let build_sixminuteab_bot start_bot middle_bot1 middle_bot2 end_bot closer_bot state player =
+	
+	let time_left = if player = P1 then state.time1 else state.time2 in
+	prerr_endline (string_of_int time_left);
 	incr num_moves;
   check_middle state;
-	check_grey state player;
+	
+	(* check_grey state player; *)
 	check_ending state;
 	check_closer state player;
 	let bot = (
 		match (!use_grey, !middle, !ending, !closer) with
 		  | (true, _, _, _) -> grey_alphabeta_bot 
 			| (false, false, false, false) -> start_bot
-			| (_, true, false, false) -> middle_bot
+			| (_, true, false, false) -> if time_left > 190000 then middle_bot1 else middle_bot2
 			| (_, _, true, false) -> end_bot
 			| (_, _, _, true) -> closer_bot) in
 	bot state player
 
-let sixminutemanhattan_bot state player = 		
-	build_sixminuteab_bot manhattan_bot basic_alphabeta_bot manhattan_bot rocker_bot state player
-
-let sixminuteab_bot state player =
-	build_sixminuteab_bot mustache_minimax_bot mustache_minimax_bot mustache_minimax_bot rocker_bot state player
-	
-let sixminutetest_bot state player =
-	build_sixminuteab_bot greedy_bot greedy_bot greedy_bot rocker_bot state player
-
 let sixminutebeam state player =
-	build_sixminuteab_bot beam_bot beam_bot beam_bot rocker_bot state player
+	build_sixminuteab_bot (ids_bot 3) beam_bot_four beam_bot_three (ids_bot 3) rocker_bot state player
 	
-let sixminutewinner state player =
-	build_sixminuteab_bot winner_bot winner_bot winner_bot rocker_bot state player
+	
+	
 	
 	
     

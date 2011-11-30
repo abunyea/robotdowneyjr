@@ -18,9 +18,8 @@ let add_to table board score =
 	Hashtbl.add table board score;;
 
 let get_available_moves board player =
-	available_moves board player 
-	(* let moves = available_moves board player in
-	List.filter (fun (x,y,x',y',_,_) -> (player = P1 && y' <= y) || (player = P2 && y' >= y)) moves *)
+  let moves = available_moves board player in
+	List.filter (fun (x,y,x',y',_,_) -> (player = P1 && y' <= y) || (player = P2 && y' >= y)) moves 
 
 let num_moves_dif player state =
 	let board = state.board in
@@ -121,7 +120,7 @@ let v_dist_eval player state =
 let alphabeta evaluate max_depth state player =
 	let start = Unix.time() in
 	let states_examined = ref 0 in
-	
+
 	(* Should return a value *)
 	let rec max_value (state, alpha, beta) depth: float =
 		(states_examined:= !states_examined + 1);
@@ -157,24 +156,34 @@ let alphabeta evaluate max_depth state player =
 								beta:= (min !beta !v);
 								run_through tail)) in
 					run_through successors in	
-	let successors = get_available_moves state.board player in 
-	let num_successors = List.length successors in
-	let best_move = ref (-1, -1, -1, -1, -1, -1) in
-	let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
-	let alpha = neg_infinity in
-	let beta = infinity in
-	let rec find_best moves =
-		match moves with
-			| [] -> !best_move 
-			| x::t -> let state' = update_board state x in
-				let best' = start_func (state', alpha, beta) max_depth in
-				if comparison best' !best then (best:= best'; best_move:= x; find_best t) else find_best t in
-	let best_move = find_best successors in
-	let time_took = Unix.time() -. start in
-	prerr_endline ("Examined " ^ (string_of_int !states_examined) ^ " states starting with a branching factor of " ^ (string_of_int num_successors));
-	prerr_endline ("Took " ^ (string_of_float time_took) ^ " seconds" ^ " at depth " ^ (string_of_int max_depth));
-	prerr_endline "";
-	best_move;;
+	let successors = get_available_moves state.board player in
+	let (best_gain, best_move) = List.fold_left (
+		fun (best_gain, best_move) (x1, y1, x2, y2, x3, y3) -> 
+			let y_gain = (if player = P1 then y1 - y2 else y2 - y1) in
+			if y_gain >= best_gain then (y_gain, (x1, y1, x2, y2, x3, y3)) else
+			(best_gain, best_move)) (0, (-1, -1, -1, -1, -1, -1)) successors in
+		
+		if best_gain >= 8 then (prerr_endline "No dicking around now..."; best_move)
+		else (
+		
+		let num_successors = List.length successors in
+		let best_move = ref (-1, -1, -1, -1, -1, -1) in
+		let (start_func, comparison, best) = if player = P1 then (min_value, (>), ref neg_infinity) else (max_value, (<), ref infinity) in 
+		let alpha = neg_infinity in
+		let beta = infinity in
+		let rec find_best moves =
+			match moves with
+				| [] -> !best_move 
+				| x::t -> let state' = update_board state x in
+					let best' = start_func (state', alpha, beta) max_depth in
+					if comparison best' !best then (best:= best'; best_move:= x; find_best t) else find_best t in
+		let best_move = find_best successors in
+		let time_took = Unix.time() -. start in
+		prerr_endline ("Examined " ^ (string_of_int !states_examined) ^ " states starting with a branching factor of " ^ (string_of_int num_successors));
+		prerr_endline ("Took " ^ (string_of_float time_took) ^ " seconds" ^ " at depth " ^ (string_of_int max_depth));
+		prerr_endline "";
+		best_move)
+		;;
 
 let avail_greys_p1 = [(7, 5); (9, 5); (11, 5); (13, 5); (15, 5); (17,5)]
 let avail_greys_p2 = [(7, 11); (9, 11); (11, 11); (13, 11); (15, 11); (17,11)]
@@ -245,7 +254,6 @@ let alphabeta_grey evaluate max_depth state player =
 	prerr_endline ("Took: " ^ (string_of_float time_took) ^ " seconds");
 	best_move;;
 
-
 (* We require a bot to be of type state -> player -> move *)
 (* However, alphabeta is of the form (player -> state -> float) -> int -> state -> player -> move*)
 (* So this function just does a little currying to make it seem prettier *)
@@ -263,5 +271,6 @@ let grey_alphabeta_bot = alphabeta_grey our_eval 2;;
 
 let mustache_minimax_bot = build_minimax_bot basic_mustache_evaluator 2;;
 let winner_bot = build_minimax_bot winning_evaluator 2;;
-let beam_bot = build_minimax_bot beam_evaluator 2;;
+let beam_bot_three = build_minimax_bot beam_evaluator 2;;
+let beam_bot_four = build_minimax_bot beam_evaluator 3;;
 			

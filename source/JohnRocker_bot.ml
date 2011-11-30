@@ -2,6 +2,8 @@ open Print
 open Board
 open State
 open Baby_bot
+open Greedy_bot
+open KeithHernandez_bot
 open Stack
 
 type node = board*move_set
@@ -42,7 +44,7 @@ let rec generate_move_sequence player =
 *)
 
 let rec ids player initial = 
-	if !depth > cMAX_DEPTH then (depth:= 1; baby_bot initial player) else (
+	if !depth > cMAX_DEPTH then (depth:= 1; (ids_bot 3 initial player)) else (
 	let rec ids_helper() =
 		if Stack.is_empty q then [] else (
 			let (board,sequence) = Stack.pop q in

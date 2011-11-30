@@ -35,13 +35,12 @@ let print_stats won code num_moves =
 	
 let run () = 
   let (first_player, initial_state) = read_initial_input () in
-  print_board initial_state.board;
   let rec run_helper player current =
     if current.player = player then (
 	  (* Our turn *)
 			 start_timer();
       (* do and output the current move *)
-      let move = sixminuteab_bot current player in
+      let move = sixminutebeam current player in
         print_endline (string_of_move move);
       (* get move status *)
       let status = int_of_string (read_line ()) in

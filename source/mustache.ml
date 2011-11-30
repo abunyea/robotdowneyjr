@@ -4,6 +4,10 @@ open State
 (* A suite of useful board evaluation functions named after famous mustachioed historical figures *)
 
 
+let (beam_weights, furthest_back_weights) =
+	((12., 0.8, 0.25 , 1., 5., 1., 1., 1.), (2., 1.)) 
+	(*	  ((1., 1., 0., 0., 1., 1., 1., 1.), (0., 0.)) *)
+	 
 let nikos_dist (x, y) (x', y') = 
 		let dr = y' - y in
 		let ds = (x + y - x'- y')/2 in
@@ -79,8 +83,8 @@ let dali_dist degree player pieces =
 		let rec tally sum list = match list with 
 			| [] -> sum
 		(*	| (x2,y2)::t -> tally (sum +. (((float_of_int (abs(x2-x))) +. (float_of_int (abs(y2-y)))) /. 2.)) t in *)
-			| (x2,y2)::t -> tally (sum +. (nikos_dist (x,y) (x2,y2))) t in 
-		(tally sum piece_list)**degree in
+			| (x2,y2)::t -> tally (sum +. (nikos_dist (x,5) (x2,5))) t in 
+		(tally sum piece_list) /. (float_of_int (List.length pieces)) in
 		
 	(List.fold_left (dali degree pieces) 0. pieces)/.(float_of_int (List.length pieces));;
 		
@@ -93,38 +97,69 @@ let dali_dist degree player pieces =
 
 (*Teutul distance is equivalent to the average distance gained by an available move *)
 (* More is better *)
-let teutul_dist degree player pieces = 
+let teutul_dist degree player avail_moves = 
 	
 	let teutul degree sum (x,y,x2,y2,_,_) =  
 		(sum +. (nikos_dist (x,y) (x2, y2)))**degree in
 		
-	(List.fold_left (teutul degree) 0. pieces)/.(float_of_int (List.length pieces));;
+	(List.fold_left (teutul degree) 0. avail_moves)/.(float_of_int (List.length avail_moves));;
 
+(* Smaller is better *)
+let furthest_back player pieces = 
+	let (_, y_goal) = if player = P1 then (12,0) else (12, 16) in
+	let y_distances = List.map (fun (x,y) -> abs(y_goal - y)) pieces in
+	let (distance, num) = List.fold_left (fun (largest, num) y_dist -> if y_dist = largest then (largest, num + 1) else (if y_dist > largest then (y_dist, 1) else (largest, num))) (0, 0) y_distances in
+	(float_of_int distance) *. 1.0**(float_of_int (num - 1))
+	
 (*Overall mustache evaluator that takes in 4 weights and computes a total score *)
 
-let mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 player state =
+let mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 w5 d5 player state =
 	let pieces = build_piece_list state.board player 0 0 [] in
 	let avail_moves = available_moves state.board player in
-	let result = (w1 *. (stalin_dist d1 player pieces) +.
-								w2 *. (hogan_dist d2 player pieces) +.
-								w3 *. (dali_dist d3 player pieces) -.
-								w4 *. (teutul_dist d4 player avail_moves)) in
+	let s1 = (stalin_dist d1 player pieces) in
+	let s2 =  (hogan_dist d2 player pieces) in
+	let s3 = (dali_dist d3 player pieces) in
+	let s4 = -1.0 *. (teutul_dist d4 player avail_moves) in
+	let s5 = (furthest_back player pieces)**d5 in
+	
+	let scores = [s1; s2; s3; s4; s5] in
+	
+	let result = (w1 *. s1 +.
+								w2 *. s2 +.
+								w3 *. s3 +.
+								w4 *. s4 +.
+								w5 *. s5
+								) in
 	if player = P1 then result else -1.0 *. result
 
+let evaluate_one = 
+	let (w1, d1, w2, d2, w3, d3, w4, d4) = beam_weights in
+	let (w5, d5) = furthest_back_weights in
+	mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 w5 d5
 	
 let basic_mustache_evaluator player state = 
-	(mustache_evaluator 12. 0.8 1. 1. 0.3 1.0 1. 1. (toggle_player player) state) -.
-	(mustache_evaluator 12. 0.8 1. 1. 0.3 1.0 1. 1. player state)
+	(mustache_evaluator 12. 0.8 1. 1. 0.3 1.0 1. 1. 0. 0. (toggle_player player) state) -.
+	(mustache_evaluator 1. 1. 0. 0. 0. 0. 0. 0. 1. 1. player state)
 	
 let winning_evaluator player state = 
-	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. (toggle_player player) state) -.
-	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. player state)
+	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. 0. 0. (toggle_player player) state) -.
+	(mustache_evaluator 12. 0.8 1. 1. 0.3 1. 1. 1. 0. 0.  player state)
+	
+let build_evaluater (w1, d1, w2, d2, w3, d3, w4, d4) (w5, d5)  player state =
+	(mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 w5 d5 (toggle_player player) state) -. (mustache_evaluator w1 d1 w2 d2 w3 d3 w4 d4 w5 d5 player state)
+		
 
 let beam_evaluator player state =
-	(mustache_evaluator 9.948 1.085 1.417 1.089 0.774 0.799 0.611 0.855 (toggle_player player) state) -.
-	(mustache_evaluator 9.948 1.085 1.417 1.089 0.774 0.799 0.611 0.855 player state)
+		build_evaluater beam_weights furthest_back_weights player state 
 	
+	(**)
+	(* 
+	 (12., 0.8, 0.25 , 1., 5., 1., 1., 1.) -> Lost to eigen by 3
+	(10.1119112876, 1.12391898127, 2.39840679139, 1.05019761087, 1.1898191405, 0.761896496519, 1.14927696865, 0.789173963001)
+	Beat mustache bot by 7 moves
 	
-				
+	(10.1119112876, 1.12391898127, 2.39840679139, 1.05019761087, 1.1898191405, 0.761896496519, 1.14927696865, 0.789173963001)
+
+	*)	
 
 

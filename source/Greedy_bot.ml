@@ -28,12 +28,12 @@ let greedy_bot state player =
 		let curr_dist = (dist (x1, y1)) - (dist (x2, y2)) in
 		if curr_dist < max_dist then (max_dist, list_so_far) else
 			(if curr_dist = max_dist then (max_dist, move::list_so_far) else (curr_dist, [move])) in
-	let best_list = List.fold_left fold_func (0, []) move_set in
+	let best_list = snd (List.fold_left fold_func (0, []) move_set) in
 	
 				
 			
 	(* prerr_endline "Constructed moves list"; *)
  (* print_movelist best_list; *)
-    match snd best_list with
+    match best_list with
     [] -> failwith "no moves"
-		| x::t -> x
+		| _ -> List.nth best_list (Random.int (List.length best_list))

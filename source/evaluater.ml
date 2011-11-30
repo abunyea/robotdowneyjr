@@ -1,5 +1,6 @@
 
-let cEXCEPTION = -100000.0
+let cEXCEPTION = -100000.0;;
+
 (* Taken from RosettaCode.com *)
 (* Executes cmd in terminal, and returns the results. *)
 let syscall cmd =
@@ -44,9 +45,10 @@ let score player =
 (*Plays a game a returns a result of 1.0 if we win, or 0.0 if we lose*)
 (* Also returns the number of milliseconds it took to play the game *)
 (* Requires that we execute this in the server directory *)
-let play_game our_command opp_command =
+let play_game our_command opp_command fst_player =
 		try
-			let cmd = "java GameServer 4700 7 p1.log p2.log '" ^ our_command ^ "' '" ^ opp_command ^ "' game.log 1>learner.out 2>learner.err" in
+			let cmd = if fst_player then ("java GameServer 4700 7 p1.log p2.log '" ^ our_command ^ "' '" ^ opp_command ^ "' game.log 1>learner.out 2>learner.err") else
+				("java GameServer 4700 7 p1.log p2.log '" ^ opp_command ^ "' '" ^ our_command ^ "' game.log 1>learner.out 2>learner.err") in
 			let _ = syscall cmd in
 			let output = syscall "cat learner.err" in 
 			let lines = Str.split (Str.regexp "\n") output in
@@ -55,10 +57,10 @@ let play_game our_command opp_command =
 			let time_left = int_of_string (List.hd time_line_list) in
 			let time_took = 600000 - time_left in
 			let winner_str = List.hd (List.rev lines) in
-			let winner = if winner_str = "1" then 1.0 else 0.0 in
+			let winner = if winner_str = "1" then (if fst_player then 1.0 else 0.0) else (if fst_player then 0.0 else 1.0) in
 			(winner, time_took)
 		with
-			| e -> print_endline "There was an exception this time"; (c_EXCEPTION, -1);;
+			| e -> print_endline "There was an exception this time"; (-100000.0, -1);;
 	
 (*
 (* Builds an evaluation function that takes the dot products of weights and a bunch of attributes of the boards *)
@@ -70,6 +72,7 @@ let build_evaluater (weights : float list) (feature_functions : (board -> float)
 
 
 let get_stats() = 
+	Random.self_init();
 	let our_command = Sys.argv.(1) in
 	let opp_command = Sys.argv.(2) in 
 	let out_stream = open_out Sys.argv.(3) in
@@ -81,7 +84,8 @@ let get_stats() =
 				
 	let rec helper times_left wins_so_far total_time =
 		if times_left = 0 then (wins_so_far, total_time) else
-			let (winner, time_took) = play_game our_command opp_command in
+			let fst_player = Random.bool() in
+			let (winner, time_took) = play_game our_command opp_command fst_player in
 			(print_endline ("Trial " ^ (string_of_int (number_times - times_left)) ^ "\nWinner:" ^ (string_of_float winner)));
 			if winner = cEXCEPTION then (helper times_left wins_so_far total_time) else
 			(print_stats winner time_took;

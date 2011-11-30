@@ -135,10 +135,9 @@ let rec build_piece_list board player bound1 bound2 pieces =
 
 let available_moves b player = 
   (*Step list of a piece is all of the possible places it can step to *)
-  let step_list (x,y) : move list= 
+ let step_list (x,y) : move list= 
     List.flatten([(if x+2 < 25 && b.(y).(x+2) = Empty then [(x,y,x+2,y, -1, -1)] else []);
       (if x-2 >= 0 && b.(y).(x-2) = Empty then [(x,y,x-2,y, -1, -1)] else []);
-     
 	(if player = P1 then (
 	  (if x-1 >= 0 && y-1 >= 0 && b.(y-1).(x-1) = Empty then [(x,y,x-1,y-1, -1, -1)] else []);
       (if x+1 < 25 && y-1 >= 0 && b.(y-1).(x+1) = Empty then [(x,y,x+1,y-1, -1, -1)] else []))
@@ -148,6 +147,8 @@ let available_moves b player =
   (*Jump List of a piece is all of the possible places it can jump to*)
   (* Inputs: a coordinate pair (x,y) and a list of coordinates not to consider*)
   (* so as to avoid cycles *)
+	
+													
   let rec jump_list lst (x,y) (u,v) = 
     (if (x+2 < 25 && b.(y).(x+2) <> Void && b.(y).(x+2) <> Empty 
       && not(List.exists (fun (a,b) -> a=x+4 && b=y) lst) 
